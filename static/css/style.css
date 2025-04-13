@@ -1,0 +1,399 @@
+/* Styles cho các ví dụ */
+.example-item {
+    background-color: #f8f9ff;
+    border: 1px solid #e1e7ff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.example-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+    border-color: #c5d1ff;
+}
+
+.example-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.example-korean {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c4f99;
+    margin-bottom: 6px;
+    word-break: keep-all;
+}
+
+.example-translation {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.pronunciation-button {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: #6366f1;
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(99, 102, 241, 0.3);
+}
+
+.pronunciation-button:hover {
+    background-color: #4f46e5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.4);
+}
+
+.pronunciation-button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Hiệu ứng đang phát âm */
+.pronunciation-button.playing {
+    animation: pulse 1.5s infinite;
+    background-color: #ef4444;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+/* Styles cho grid layout trong examples */
+.example-item .grid {
+    margin-top: 8px;
+    border-top: 1px dashed #e5ecff;
+    padding-top: 8px;
+}
+
+.example-item .text-xs.font-medium {
+    color: #5c73b8;
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+/* Style cho example-pronunciation */
+.example-pronunciation {
+    margin: 2px 0 6px;
+    font-family: 'Courier New', monospace;
+    background-color: #f3f6ff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border-left: 3px solid #8896d7;
+    line-height: 1.4;
+}
+
+/* Cải thiện hiển thị phần phát âm */
+.pronunciation-guide {
+    background-color: #fffbea;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    line-height: 1.5;
+    color: #735c0f;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+.pronunciation-guide:before {
+    content: '🔊';
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    padding: 0 5px;
+    background-color: #fff;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+/* Cải thiện hiển thị từ Hàn trong ví dụ */
+.korean-text, .example-korean {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #2c4f99;
+    margin-bottom: 6px;
+    word-break: keep-all;
+}
+
+/* Style cho ví dụ đọc */
+.pronunciation-block {
+    display: flex;
+    align-items: flex-start;
+    margin: 10px 0;
+    padding: 8px 12px;
+    background-color: #f0f9ff;
+    border-radius: 8px;
+    border-left: 3px solid #3b82f6;
+}
+
+.pronunciation-text {
+    flex-grow: 1;
+}
+
+.pronunciation-phonetics {
+    font-family: 'Courier New', monospace;
+    font-style: italic;
+    color: #4b5563;
+    margin-top: 3px;
+    font-size: 0.9rem;
+}
+
+/* Style cho nút phát âm lớn hơn ở phần phát âm chính */
+.pronunciation-button.large {
+    width: 45px;
+    height: 45px;
+    font-size: 1.1rem;
+}
+
+/* Thêm hiệu ứng highlight khi phát âm */
+.playing-text {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-radius: 4px;
+    padding: 2px 4px;
+    transition: background-color 0.3s;
+}
+
+/* Cập nhật style cho pronunciation-segment */
+.pronunciation-segment {
+    display: inline-block;
+    padding: 2px 5px;
+    margin: 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f8f9ff;
+    border: 1px dashed #d1d9ff;
+    transition: all 0.2s ease;
+}
+
+.pronunciation-segment:hover {
+    background-color: #e8edff;
+    transform: translateY(-1px);
+}
+
+.pronunciation-segment i {
+    opacity: 0.6;
+    font-size: 10px;
+    margin-left: 2px;
+    transition: opacity 0.2s ease;
+}
+
+.pronunciation-segment:hover i {
+    opacity: 1;
+}
+
+/* Cập nhật style cho pronunciation-examples */
+.pronunciation-examples {
+    border-top: 1px dashed #f8d070;
+    padding-top: 12px;
+    margin-top: 12px;
+}
+
+.pronunciation-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: #fff;
+    border: 1px solid #fdf0d0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.pronunciation-block:hover {
+    border-color: #f8d070;
+    box-shadow: 0 2px 6px rgba(251, 191, 36, 0.1);
+}
+
+.pronunciation-text {
+    flex: 1;
+}
+
+.pronunciation-phonetics {
+    font-family: 'Courier New', monospace;
+    color: #4b5563;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    background-color: #fafafa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 5px 0;
+    border-left: 2px solid #d1d5db;
+}
+
+/* Cách hiển thị từ vựng tiếng Hàn với hiệu ứng khi được phát âm */
+.korean-text.playing-text,
+.example-korean.playing-text {
+    background-color: rgba(251, 191, 36, 0.1);
+    border-bottom: 1px dashed #f59e0b;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+/* Thêm style cho nút phát âm lớn */
+.pronunciation-button.large {
+    width: 42px;
+    height: 42px;
+    background-color: #f59e0b;
+}
+
+.pronunciation-button.large:hover {
+    background-color: #d97706;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(251, 191, 36, 0.4);
+}
+
+/* Animation khi đang phát âm cho button */
+.pronunciation-button.playing {
+    animation: pulse-amber 1.5s infinite;
+    background-color: #f59e0b;
+}
+
+@keyframes pulse-amber {
+    0% {
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+    }
+}
+
+/* Hiển thị phiên âm từng từ tiếng Hàn */
+.korean-phonetics-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 10px 0;
+}
+
+.korean-phonetic-word {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fefbea;
+    border: 1px solid #f8e3a3;
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 60px;
+    transition: all 0.2s ease;
+}
+
+.korean-phonetic-word:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(251, 191, 36, 0.1);
+    border-color: #f8d070;
+}
+
+.korean-word-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #7c2d12;
+}
+
+.korean-word-phonetic {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #92400e;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* Hiển thị từ gốc khi phát âm */
+.korean-original {
+    color: #7c2d12;
+    font-weight: 500;
+    border-top: 1px dashed #f8e3a3;
+    padding-top: 8px;
+    margin-top: 8px;
+}
+
+/* Style cho các ví dụ phát âm */
+.pronunciation-example {
+    display: inline-block;
+    background-color: #fffbeb;
+    border: 1px solid #fcd34d;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.pronunciation-example:hover {
+    background-color: #fef3c7;
+    transform: translateY(-1px);
+}
+
+.pronunciation-detail-item {
+    transition: all 0.2s ease;
+}
+
+.pronunciation-detail-item:hover {
+    border-color: #fcd34d;
+    box-shadow: 0 2px 6px rgba(251, 191, 36, 0.1);
+}
+
+/* Hiển thị từ tiếng Hàn trong ví dụ phát âm */
+.example-pronunciation {
+    font-family: 'Courier New', monospace;
+    color: #6b7280;
+    font-size: 0.9rem;
+    background-color: #f9fafb;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: relative;
+    border-left: 2px solid #d1d5db;
+    margin: 4px 0;
+}
+
+/* Cải thiện hiển thị ví dụ phát âm */
+.pronunciation-guide-box {
+    position: relative;
+}
+
+.pronunciation-guide-box:after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 20px;
+    border-width: 10px 10px 0;
+    border-style: solid;
+    border-color: #fef3c7 transparent;
+    display: block;
+    width: 0;
+}
+
+/* Animation khi đang phát âm ví dụ */
+@keyframes highlight-text {
+    0%, 100% { background-color: rgba(251, 191, 36, 0.1); }
+    50% { background-color: rgba(251, 191, 36, 0.3); }
+}
+
+.playing-text {
+    animation: highlight-text 1.5s infinite;
+} 

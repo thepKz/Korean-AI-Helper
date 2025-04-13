@@ -1,0 +1,12 @@
+{
+  "name": "hanquocsarang",
+  "version": "1.0.0",
+  "description": "> **Chú ý**: Ứng dụng này có chứa ngôn ngữ GenZ, có thể bao gồm từ ngữ thô tục, chửi thề và nội dung dành cho người trưởng thành. Nếu bạn dưới 18 tuổi hoặc không thoải mái với các nội dung này, vui lòng cân nhắc trước khi sử dụng.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

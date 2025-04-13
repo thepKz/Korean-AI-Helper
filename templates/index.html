@@ -1,0 +1,3671 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HangulMate - Học Tiếng Hàn</title>
+    <!-- Sử dụng bản Tailwind minified phù hợp cho production -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f5ff;
+        }
+        .result-section {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        .result-section:hover {
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+        .result-section h3 {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+                font-size: 1.1rem;
+            }
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        #loading .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Thêm style cho upload */
+        #image-preview {
+            max-width: 150px;
+            max-height: 150px;
+            margin-top: 10px;
+            display: none; /* Ẩn ban đầu */
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        /* Style cho các bảng từ vựng, ngữ pháp */
+        .vocab-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .vocab-table th {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        .vocab-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .vocab-table tr:hover {
+            background-color: #f8fafc;
+        }
+        /* Style cho các ví dụ */
+        .example-item {
+            background-color: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #3b82f6;
+        }
+        /* Style cho phát âm */
+        .pronunciation-guide {
+            background-color: #fff7ed;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px dashed #f97316;
+            margin: 0.5rem 0;
+            font-family: 'Courier New', monospace;
+        }
+        .pronunciation-controls {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .pronunciation-speed {
+            width: 120px;
+        }
+        .pronunciation-button {
+            background-color: #f97316;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        .pronunciation-button:hover {
+            background-color: #ea580c;
+        }
+        .pronunciation-settings {
+            margin-left: auto;
+            cursor: pointer;
+            color: #f97316;
+            transition: transform 0.2s;
+        }
+        .pronunciation-settings:hover {
+            transform: rotate(90deg);
+        }
+        .pronunciation-settings-panel {
+            background-color: #fff;
+            border: 1px solid #f3f4f6;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .pronunciation-word-by-word {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .pronunciation-word {
+            background-color: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .pronunciation-word:hover {
+            background-color: #e5e7eb;
+        }
+        .pronunciation-word .play-icon {
+            color: #f97316;
+            font-size: 0.75rem;
+        }
+        .expand-knowledge-btn {
+            display: inline-flex;
+            align-items: center;
+            background-color: #dbeafe;
+            color: #2563eb;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+        .expand-knowledge-btn:hover {
+            background-color: #bfdbfe;
+        }
+        .expand-knowledge-content {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .token-highlight {
+            display: inline-block;
+            background-color: #ffedd5;
+            padding: 0 0.25rem;
+            border-radius: 0.25rem;
+            margin: 0 0.1rem;
+        }
+        /* Style cho tooltip nghĩa từ */
+        .word-tooltip {
+            position: relative;
+            cursor: pointer;
+            border-bottom: 1px dashed #3b82f6;
+            display: inline-block;
+        }
+
+        .word-tooltip .tooltip-content {
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 250px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 100;
+            border: 1px solid #e5e7eb;
+        }
+
+        .word-tooltip:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .word-tooltip .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+
+        .word-meaning {
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+
+        .word-romanization {
+            color: #6b7280;
+            font-style: italic;
+            font-size: 0.875rem;
+        }
+
+        .word-pos {
+            margin-top: 0.25rem;
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            background-color: #f3f4f6;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            color: #4b5563;
+        }
+
+        /* Tooltip chặn sự kiện click của parent element */
+        .word-tooltip .tooltip-content * {
+            pointer-events: auto;
+        }
+
+        /* Highlight từ vựng khi hover */
+        .korean-word {
+            transition: background-color 0.2s;
+            border-radius: 0.25rem;
+            padding: 0 0.25rem;
+        }
+
+        .korean-word:hover {
+            background-color: #dbeafe;
+        }
+
+        /* Errors và warnings */
+        .error-container {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 0.375rem;
+            color: #b91c1c;
+        }
+
+        .warning-container {
+            background-color: #fff7ed;
+            border-left: 4px solid #f97316;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 0.375rem;
+            color: #c2410c;
+        }
+
+        /* Container cho công thức ngữ pháp */
+        .formula-container {
+            background-color: #ecfdf5;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid #10b981;
+        }
+
+        .formula-title {
+            font-weight: 600;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .formula-content {
+            font-family: 'Courier New', monospace;
+            background-color: white;
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            border: 1px solid #d1fae5;
+        }
+
+        /* Style cho chat container */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 0.5rem;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .chat-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-message.user {
+            flex-direction: row;
+        }
+
+        .chat-message.other {
+            flex-direction: row-reverse;
+        }
+
+        .chat-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .chat-message.user .chat-avatar {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        .chat-message.other .chat-avatar {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .chat-bubble {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            max-width: 80%;
+            position: relative;
+        }
+
+        .chat-message.user .chat-bubble {
+            border-bottom-left-radius: 0.25rem;
+            border: 1px solid #dbeafe;
+        }
+
+        .chat-message.other .chat-bubble {
+            border-bottom-right-radius: 0.25rem;
+            border: 1px solid #fef3c7;
+        }
+
+        .chat-header {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            color: #6b7280;
+        }
+
+        .chat-message.user .chat-header {
+            color: #2563eb;
+        }
+
+        .chat-message.other .chat-header {
+            color: #d97706;
+        }
+
+        .chat-text {
+            line-height: 1.5;
+        }
+
+        /* Style cho examples container */
+        .examples-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .example-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .example-item:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .korean-text {
+            font-size: 1.125rem;
+            color: #1e40af;
+            font-weight: 500;
+        }
+
+        .roman-text {
+            color: #6b7280;
+            font-style: italic;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meaning-text {
+            color: #374151;
+        }
+
+        .note-text {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background-color: #f3f4f6;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* Animations for examples */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .example-item {
+            animation: fadeInUp 0.3s ease-in-out forwards;
+            opacity: 0;
+        }
+
+        .example-item:nth-child(1) { animation-delay: 0.1s; }
+        .example-item:nth-child(2) { animation-delay: 0.2s; }
+        .example-item:nth-child(3) { animation-delay: 0.3s; }
+        .example-item:nth-child(4) { animation-delay: 0.4s; }
+        .example-item:nth-child(5) { animation-delay: 0.5s; }
+
+        /* Style cho voice recorder */
+        .voice-recorder-container {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .voice-record-button {
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .voice-record-button:hover {
+            background-color: #0284c7;
+        }
+
+        .voice-record-button.recording {
+            background-color: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .voice-feedback-container {
+            margin-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 1rem;
+        }
+
+        .voice-feedback-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .voice-feedback-score .score-number {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .voice-feedback-details {
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            background-color: #f9fafb;
+            margin-top: 0.5rem;
+        }
+
+        .syllable-feedback {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .syllable-feedback .syllable {
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .syllable-feedback .accuracy {
+            margin-left: auto;
+        }
+
+        .syllable-feedback .accuracy-bar {
+            height: 0.5rem;
+            width: 100px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-left: 0.5rem;
+        }
+
+        .syllable-feedback .accuracy-fill {
+            height: 100%;
+            border-radius: 9999px;
+        }
+
+        /* Level indicators */
+        .syllable-perfect .accuracy-fill {
+            background-color: #10b981;
+        }
+
+        .syllable-good .accuracy-fill {
+            background-color: #3b82f6;
+        }
+
+        .syllable-fair .accuracy-fill {
+            background-color: #f59e0b;
+        }
+
+        .syllable-poor .accuracy-fill {
+            background-color: #ef4444;
+        }
+
+        /* Animations */
+        .wave-animation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 24px;
+        }
+
+        .wave-animation span {
+            width: 3px;
+            height: 100%;
+            background-color: #3b82f6;
+            border-radius: 3px;
+            animation: wave 1s infinite ease-in-out;
+        }
+
+        .wave-animation span:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .wave-animation span:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .wave-animation span:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .wave-animation span:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.2); }
+            50% { transform: scaleY(1); }
+        }
+        
+        /* Style cho phần hiển thị phát âm */
+        .korean-phonetic-word {
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        .korean-phonetic-word .korean-word-text {
+            font-size: 1.125rem;
+            color: #92400e;
+            font-weight: 500;
+        }
+        
+        .korean-phonetic-word .korean-word-phonetic {
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-style: italic;
+        }
+        
+        .pronunciation-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            background-color: #fef3c7;
+            color: #d97706;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0.25rem 0.5rem;
+            border: none;
+            outline: none;
+        }
+        
+        .pronunciation-button:hover {
+            background-color: #fbbf24;
+            color: #fff;
+        }
+        
+        .pronunciation-button.playing {
+            background-color: #fbbf24;
+            color: #fff;
+            animation: pulse 2s infinite;
+        }
+        
+        .pronunciation-button.large {
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+        }
+        
+        .pronunciation-button.small {
+            padding: 0.25rem 0.375rem;
+            font-size: 0.75rem;
+        }
+        
+        .playing-text {
+            background-color: #fef3c7;
+            border-radius: 0.25rem;
+            padding: 0 0.25rem;
+            animation: highlight-pulse 2s infinite;
+        }
+        
+        .pronunciation-segment {
+            display: inline-flex;
+            align-items: center;
+            margin: 0.125rem;
+            padding: 0.25rem 0.5rem;
+            background-color: #fffbeb;
+            border-radius: 0.375rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .pronunciation-segment:hover {
+            background-color: #fef3c7;
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+        }
+        
+        @keyframes highlight-pulse {
+            0% { background-color: #fef3c7; }
+            50% { background-color: #fde68a; }
+            100% { background-color: #fef3c7; }
+        }
+        
+        /* Cải thiện giao diện container phát âm */
+        .pronunciation-guide {
+            background-color: #fffbeb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Cải thiện style cho từng từ tiếng Hàn riêng biệt */
+        .korean-word {
+            color: #1e40af;
+            font-weight: 500;
+        }
+        
+        /* Style cho các ví dụ phát âm */
+        .pronunciation-examples {
+            margin-top: 1rem;
+        }
+        
+        .pronunciation-block {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            margin-bottom: 0.5rem;
+        }
+        
+        .pronunciation-text {
+            flex: 1;
+        }
+        
+        .korean-text {
+            font-weight: 500;
+            color: #92400e;
+            margin-bottom: 0.25rem;
+        }
+        
+        .pronunciation-phonetics {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .example-translation {
+            color: #4b5563;
+            font-size: 0.875rem;
+        }
+        
+        /* Style cho ví dụ */
+        .examples-container {
+            margin-top: 1rem;
+        }
+        
+        .example-item {
+            margin-bottom: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+        
+        .example-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        
+        .example-content {
+            padding: 0.75rem;
+            flex: 1;
+        }
+        
+        .example-korean {
+            font-weight: 500;
+            color: #1e40af;
+            margin-bottom: 0.25rem;
+            font-size: 1.05rem;
+        }
+        
+        .example-pronunciation {
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-style: italic;
+            margin-bottom: 0.25rem;
+        }
+        
+        .example-translation {
+            color: #4b5563;
+        }
+        
+        .note-text {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background-color: rgba(251, 191, 36, 0.1);
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            color: #92400e;
+        }
+        
+        /* Nút phát âm trong ví dụ */
+        .example-item .pronunciation-button {
+            background-color: #eff6ff;
+            color: #3b82f6;
+            border-radius: 9999px;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+        
+        .example-item .pronunciation-button:hover {
+            background-color: #3b82f6;
+            color: #fff;
+            transform: scale(1.05);
+        }
+        
+        /* Làm đẹp trường hợp có phiên âm */
+        .korean-phonetic-word .korean-word-text {
+            font-size: 1.125rem;
+            color: #1e40af;
+            font-weight: 500;
+        }
+        
+        /* Animation cho ví dụ */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .example-item {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        /* Style cho thanh điều chỉnh tốc độ phát âm */
+        #global-pronunciation-settings {
+            background-color: #ffffff;
+            border: 1px solid #93c5fd;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem;
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 50;
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        }
+        
+        #global-pronunciation-settings:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        #global-pronunciation-settings label {
+            color: #3b82f6;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        #pronunciation-speed {
+            -webkit-appearance: none;
+            width: 7rem;
+            height: 0.5rem;
+            background: #e0e7ff;
+            border-radius: 0.25rem;
+            outline: none;
+        }
+        
+        #pronunciation-speed::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 1rem;
+            height: 1rem;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        #pronunciation-speed::-moz-range-thumb {
+            width: 1rem;
+            height: 1rem;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: none;
+        }
+        
+        #pronunciation-speed::-webkit-slider-thumb:hover {
+            background: #2563eb;
+        }
+        
+        #pronunciation-speed::-moz-range-thumb:hover {
+            background: #2563eb;
+        }
+        
+        #speed-value {
+            color: #2563eb;
+            font-weight: 600;
+            min-width: 2.5rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-4 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold text-center text-blue-700 mb-2">🇰🇷 HangulMate 🇰🇷</h1>
+        <p class="text-center text-gray-600 mb-6">Người bạn đồng hành tuyệt vời trên hành trình học tiếng Hàn của bạn</p>
+        
+        <form id="korean-form" class="mb-6">
+            <textarea id="korean-input" rows="4" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Nhập câu tiếng Hàn (예: 안녕하세요, 만나서 반갑습니다), hoặc đặt câu hỏi về ngữ pháp (vd: phân biệt 은/는 và 이/가)"></textarea>
+            
+            <!-- Input tải ảnh -->
+            <div class="mt-4">
+                <label for="image-upload" class="cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-2 px-4 rounded-md inline-flex items-center transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4V5h12v10zM8.586 8.586a1 1 0 00-1.414 1.414L10 12.414l2.828-2.828a1 1 0 10-1.414-1.414L10 9.586l-1.414-1.414zM10 15a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                        <path d="M10 4a1 1 0 011 1v4.586l1.707-1.707a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L9 9.586V5a1 1 0 011-1z" />
+                    </svg>
+                    Tải ảnh chứa văn bản tiếng Hàn (tùy chọn)
+                </label>
+                <input id="image-upload" type="file" class="hidden" accept="image/*">
+                <span id="image-name" class="ml-3 text-sm text-gray-500"></span>
+                <img id="image-preview" src="#" alt="Xem trước ảnh">
+                </div>
+                <br>
+            
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 font-medium text-white py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
+                <span>Phân tích</span>
+                <i class="fas fa-chevron-right ml-2"></i>
+            </button>
+            <div class="mt-2"></div>
+            <button type="button" id="reset-btn" class="bg-gray-200 hover:bg-gray-300 font-medium text-gray-700 py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
+                <i class="fas fa-redo-alt mr-2"></i>
+                <span>Làm mới</span>
+            </button>
+        </form>
+
+        <!-- Hướng dẫn sử dụng tính năng mnemonics -->
+        <div class="mt-4 mb-6 p-3 bg-purple-50 rounded-lg border border-purple-100">
+            <h3 class="flex items-center text-purple-800 font-medium mb-2">
+                <i class="fas fa-brain mr-2"></i> Ghi nhớ từ vựng với Mnemonics
+            </h3>
+            <p class="text-gray-700 mb-2">Gõ "<span class="font-medium text-purple-700">ghi nhớ từ 'từ_tiếng_hàn'</span>" để nhận các phương pháp ghi nhớ hiệu quả cho từ vựng đó.</p>
+            <div class="flex flex-wrap gap-2 text-sm">
+                <span class="bg-white px-2 py-1 rounded border border-purple-100 cursor-pointer hover:bg-purple-100 transition-colors mnemonic-example">ghi nhớ từ '안녕'</span>
+                <span class="bg-white px-2 py-1 rounded border border-purple-100 cursor-pointer hover:bg-purple-100 transition-colors mnemonic-example">nhớ từ '사랑'</span>
+                <span class="bg-white px-2 py-1 rounded border border-purple-100 cursor-pointer hover:bg-purple-100 transition-colors mnemonic-example">mnemonics '학교'</span>
+            </div>
+        </div>
+
+        <div id="loading">
+            <div class="loading-spinner"></div>
+            <p class="text-gray-600">Đang phân tích nội dung tiếng Hàn...</p>
+            </div>
+                
+        <div id="results" class="hidden">
+            <!-- Thông báo lỗi sẽ được chèn vào đây bởi JS -->
+            <div class="result-section" id="conversation-section" style="display: none;">
+                <h3><i class="fas fa-comments text-blue-600"></i> Hội thoại</h3>
+                <div id="conversationContent"></div>
+            </div>
+            
+            <div class="result-section" id="vocab-section" style="display: none;">
+                <h3><i class="fas fa-book text-blue-600"></i> Từ vựng</h3>
+                <div id="vocabContent"></div>
+        </div>
+            
+            <div class="result-section" id="grammar-section" style="display: none;">
+                <h3><i class="fas fa-feather-alt text-blue-600"></i> Ngữ pháp</h3>
+                <div id="grammarContent"></div>
+                </div>
+                
+            <div class="result-section" id="translation-section" style="display: none;">
+                <h3><i class="fas fa-language text-blue-600"></i> Dịch thuật</h3>
+                <div id="translationContent"></div>
+            </div>
+            
+            <div class="result-section" id="examples-section" style="display: none;">
+                <h3><i class="fas fa-lightbulb text-blue-600"></i> Ví dụ</h3>
+                <div id="examplesContent"></div>
+            </div>
+            
+            <div class="result-section" id="culture-section" style="display: none;">
+                <h3><i class="fas fa-landmark text-blue-600"></i> Văn hóa</h3>
+                <div id="cultureContent"></div>
+        </div>
+            
+            <div class="result-section" id="pronunciation-section" style="display: none;">
+                <h3><i class="fas fa-volume-up text-blue-600"></i> Phát âm</h3>
+                <div id="pronunciationContent"></div>
+    </div>
+
+            <!-- Thêm mục cho bài học ngữ pháp -->
+            <div class="result-section" id="lesson-section" style="display: none;">
+                <h3><i class="fas fa-chalkboard-teacher text-blue-600"></i> Bài học ngữ pháp</h3>
+                <h4 id="lessonTopic" class="font-semibold text-lg mb-2 text-blue-800"></h4>
+                
+                <div id="lesson-definition" class="mb-4">
+                    <h5 class="font-medium text-blue-700 mb-2"><i class="fas fa-info-circle mr-1"></i> Định nghĩa:</h5>
+                    <div class="definition-content pl-4 border-l-2 border-blue-200"></div>
+                </div>
+                
+                <div id="lesson-usage" class="mb-4">
+                    <h5 class="font-medium text-blue-700 mb-2"><i class="fas fa-cog mr-1"></i> Cách dùng:</h5>
+                    <div class="usage-content pl-4 border-l-2 border-blue-200"></div>
+                    </div>
+                
+                <div id="lesson-comparison" class="mb-4">
+                    <h5 class="font-medium text-blue-700 mb-2"><i class="fas fa-balance-scale mr-1"></i> So sánh:</h5>
+                    <div class="comparison-content pl-4 border-l-2 border-blue-200"></div>
+                            </div>
+                
+                <div id="lesson-common_mistakes" class="mb-4">
+                    <h5 class="font-medium text-blue-700 mb-2"><i class="fas fa-exclamation-triangle mr-1"></i> Lỗi thường gặp:</h5>
+                    <div class="common-mistakes-content pl-4 border-l-2 border-blue-200"></div>
+                        </div>
+                
+                <div id="lesson-examples" class="mb-4">
+                    <h5 class="font-medium text-blue-700 mb-2"><i class="fas fa-list-ul mr-1"></i> Ví dụ:</h5>
+                    <div class="examples-content pl-4 border-l-2 border-blue-200"></div>
+                    </div>
+                
+                <div id="lesson-exercise" class="mb-4">
+                    <h5 class="font-medium text-blue-700 mb-2"><i class="fas fa-pencil-alt mr-1"></i> Bài tập:</h5>
+                    <div class="exercise-content pl-4 border-l-2 border-blue-200"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thêm phần mnemonics vào đây -->
+    <div class="result-section" id="mnemonics-section" style="display: none;">
+        <h3><i class="fas fa-brain text-purple-600"></i> Phương pháp ghi nhớ</h3>
+        <div id="mnemonicsContent" class="space-y-4">
+            <!-- Nội dung mnemonics sẽ được chèn vào đây bởi JS -->
+        </div>
+    </div>
+    
+    <footer class="mt-8 text-center text-gray-600 text-sm">
+        <p>© 2023 HangulMate - Học tiếng Hàn thông minh</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const form = document.getElementById('korean-form');
+        const input = document.getElementById('korean-input');
+        const imageUpload = document.getElementById('image-upload');
+        const imageName = document.getElementById('image-name');
+        const imagePreview = document.getElementById('image-preview');
+        const resultsDiv = document.getElementById('results');
+        const loadingDiv = document.getElementById('loading');
+        
+        // Lấy tất cả các container nội dung kết quả
+        const conversationSection = document.getElementById('conversation-section');
+        const conversationContent = document.getElementById('conversationContent');
+        const vocabSection = document.getElementById('vocab-section');
+        const vocabContent = document.getElementById('vocabContent');
+        const grammarSection = document.getElementById('grammar-section');
+        const grammarContent = document.getElementById('grammarContent');
+        const translationSection = document.getElementById('translation-section');
+        const translationContent = document.getElementById('translationContent');
+        const examplesSection = document.getElementById('examples-section');
+        const examplesContent = document.getElementById('examplesContent');
+        const cultureSection = document.getElementById('culture-section');
+        const cultureContent = document.getElementById('cultureContent');
+        const pronunciationSection = document.getElementById('pronunciation-section');
+        const pronunciationContent = document.getElementById('pronunciationContent');
+        const lessonSection = document.getElementById('lesson-section');
+        const lessonTopic = document.getElementById('lessonTopic');
+        
+        // Đặt các thành phần của bài học
+        const lessonSections = {
+            definition: document.querySelector('#lesson-definition .definition-content'),
+            usage: document.querySelector('#lesson-usage .usage-content'),
+            comparison: document.querySelector('#lesson-comparison .comparison-content'),
+            common_mistakes: document.querySelector('#lesson-common_mistakes .common-mistakes-content'),
+            examples: document.querySelector('#lesson-examples .examples-content'),
+            exercise: document.querySelector('#lesson-exercise .exercise-content')
+        };
+        
+        let imageBase64 = null;
+
+        // Xử lý chọn file ảnh
+        imageUpload.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                try {
+                    // Kiểm tra loại file
+                    if (!file.type.match('image.*')) {
+                        alert("Vui lòng chọn file hình ảnh (jpg, png, jpeg).");
+                        imageUpload.value = '';
+                        return;
+                    }
+                    
+                    // Kiểm tra kích thước file (tối đa 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert("Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.");
+                        imageUpload.value = '';
+                        return;
+                    }
+                    
+                    imageName.textContent = file.name;
+                    
+                    // Đọc file dưới dạng base64
+                    const base64Data = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = (error) => reject(error);
+                        reader.readAsDataURL(file);
+                    });
+                    
+                    imageBase64 = base64Data;
+                    
+                    if (imagePreview) {
+                        imagePreview.src = base64Data;
+                        imagePreview.style.display = 'block';
+                    }
+                    
+                } catch (error) {
+                    console.error("Lỗi đọc file:", error);
+                    alert("Không thể đọc file. Vui lòng thử lại với file khác.");
+                    imageUpload.value = '';
+                    imageName.textContent = '';
+                }
+            } else {
+                imageName.textContent = '';
+                if (imagePreview) {
+                    imagePreview.src = '#';
+                    imagePreview.style.display = 'none';
+                }
+                imageBase64 = null;
+            }
+        });
+
+        // Xử lý format nội dung cho đẹp
+        function formatContent(text) {
+            if (!text) return '';
+            // Thay thế xuống dòng bằng thẻ <br>
+            return text.replace(/\n/g, '<br>');
+        }
+
+        // Hiển thị từ vựng dưới dạng bảng
+        function renderVocabularyTable(vocabulary) {
+            if (!vocabulary || !Array.isArray(vocabulary) || vocabulary.length === 0) {
+                return '<p class="text-gray-500 italic">Không có thông tin từ vựng.</p>';
+            }
+            
+            let html = `
+            <table class="vocab-table">
+                <thead>
+                    <tr>
+                        <th>Từ vựng</th>
+                        <th>Phiên âm</th>
+                        <th>Nghĩa</th>
+                        <th>Loại từ</th>
+                        <th>Nghe</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            vocabulary.forEach(item => {
+                html += `
+                <tr>
+                    <td class="font-semibold text-blue-800">
+                        ${createWordTooltip(item.hangul || '', item.meaning || '?', item.roman || item.romanization || '?', item.pos || '?')}
+                    </td>
+                    <td class="text-gray-700 italic">${item.roman || item.romanization || '?'}</td>
+                    <td>${item.meaning || '?'}</td>
+                    <td><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">${item.pos || '?'}</span></td>
+                    <td>
+                        <button class="pronunciation-button p-1" onclick="speakKorean('${(item.hangul || '').replace(/'/g, "\\'")}')">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </td>
+                </tr>
+                `;
+            });
+            
+            html += `
+                </tbody>
+            </table>
+            `;
+            
+            return html;
+        }
+
+        // Phân tích văn bản để thêm tooltip cho từ Hàn Quốc
+        function createWordTooltip(word, meaning, romanization, pos) {
+            return `
+            <span class="word-tooltip korean-word">
+                ${word}
+                <div class="tooltip-content">
+                    <div class="word-meaning">${meaning || 'Không có nghĩa'}</div>
+                    <div class="word-romanization">${romanization || ''}</div>
+                    ${pos ? `<div class="word-pos">${pos}</div>` : ''}
+                    <div class="flex mt-2">
+                        <button class="pronunciation-button py-1 px-2 text-xs" onclick="event.stopPropagation(); speakKorean('${word.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-play mr-1"></i> Nghe
+                        </button>
+                    </div>
+                </div>
+            </span>
+            `;
+        }
+
+        // Thêm tooltip cho từ Hàn Quốc trong văn bản
+        function addWordTooltips(text, vocabulary) {
+            if (!text || !vocabulary || !Array.isArray(vocabulary)) {
+                return text;
+            }
+            
+            // Tạo bản sao để tránh thay đổi các đối tượng ban đầu
+            const vocabMap = {};
+            vocabulary.forEach(item => {
+                if (item.hangul) {
+                    vocabMap[item.hangul] = {
+                        meaning: item.meaning || '?',
+                        romanization: item.roman || item.romanization || '?',
+                        pos: item.pos || '?'
+                    };
+                }
+            });
+            
+            // Tìm và thay thế từ tiếng Hàn trong văn bản
+            // Regex để tìm chuỗi ký tự Hàn Quốc (Unicode range: AC00-D7A3 cho Hangul syllables)
+            const koreanRegex = /[\uAC00-\uD7A3]+/g;
+            
+            return text.replace(koreanRegex, (match) => {
+                // Nếu từ có trong danh sách từ vựng, thêm tooltip
+                if (vocabMap[match]) {
+                    return createWordTooltip(
+                        match,
+                        vocabMap[match].meaning,
+                        vocabMap[match].romanization,
+                        vocabMap[match].pos
+                    );
+                }
+                // Nếu không, vẫn làm nổi bật nhưng không có thông tin chi tiết
+                return `<span class="korean-word" onclick="lookupWord('${match.replace(/'/g, "\\'")}')">${match}</span>`;
+            });
+        }
+
+        // Hàm tìm kiếm từ khi người dùng nhấp vào
+        async function lookupWord(word) {
+            try {
+                // Hiển thị hộp thoại tạm thời
+                const dialog = document.createElement('div');
+                dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                dialog.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow-lg max-w-md w-full">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium">Tra cứu: ${word}</h3>
+                            <button class="text-gray-500 hover:text-gray-700" onclick="this.parentNode.parentNode.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="p-4 flex justify-center">
+                            <div class="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            <span class="ml-2 text-blue-600">Đang tra cứu...</span>
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded" onclick="this.parentNode.parentNode.remove()">
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(dialog);
+                
+                // Gọi API để lấy thông tin từ
+                // Đây là phần mẫu, trong thực tế bạn có thể gọi API của mình để lấy thông tin từ vựng
+                const response = await fetch('/analyze_korean', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: word }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Lỗi HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Cập nhật nội dung hộp thoại
+                const dialogContent = dialog.querySelector('.bg-white');
+                
+                if (data.vocabulary && data.vocabulary.length > 0) {
+                    const vocabItem = data.vocabulary[0];
+                    dialogContent.innerHTML = `
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium">Tra cứu: ${word}</h3>
+                            <button class="text-gray-500 hover:text-gray-700" onclick="this.parentNode.parentNode.parentNode.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            <div class="mb-2">
+                                <span class="font-bold text-xl text-blue-700">${vocabItem.hangul || word}</span>
+                                <span class="ml-2 text-gray-600 italic">${vocabItem.roman || vocabItem.romanization || ''}</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">${vocabItem.pos || 'Không xác định'}</span>
+                            </div>
+                            <div class="mb-4">
+                                <div class="font-medium">Nghĩa:</div>
+                                <div class="pl-4 border-l-2 border-blue-200">${vocabItem.meaning || 'Không có thông tin'}</div>
+                            </div>
+                            <button class="pronunciation-button py-1 px-3" onclick="speakKorean('${(vocabItem.hangul || word).replace(/'/g, "\\'")}')">
+                                <i class="fas fa-play mr-1"></i> Nghe phát âm
+                            </button>
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded" onclick="this.parentNode.parentNode.parentNode.remove()">
+                                Đóng
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    dialogContent.innerHTML = `
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium">Tra cứu: ${word}</h3>
+                            <button class="text-gray-500 hover:text-gray-700" onclick="this.parentNode.parentNode.parentNode.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            <div class="text-center text-gray-600">
+                                <i class="fas fa-info-circle mr-2"></i> Không tìm thấy thông tin từ vựng cho "${word}"
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded" onclick="this.parentNode.parentNode.parentNode.remove()">
+                                Đóng
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("Lỗi khi tra cứu từ:", error);
+                alert(`Không thể tra cứu từ "${word}". Lỗi: ${error.message}`);
+            }
+        }
+
+        // Thêm hàm phát âm tiếng Hàn (đã cập nhật để xử lý lỗi)
+        function speakKorean(text, options = {}) {
+            try {
+                if (!text || typeof text !== 'string' || text.trim() === '') {
+                    console.warn("speakKorean: Văn bản trống hoặc không hợp lệ");
+                    return;
+                }
+                
+                // Đảm bảo speedInput có giá trị mặc định nếu không tìm thấy
+                let speed = 1.0;
+                const speedInput = document.getElementById('pronunciation-speed');
+                if (speedInput) {
+                    speed = parseFloat(speedInput.value);
+                }
+                
+                // Đảm bảo tất cả các tham số đều có giá trị hợp lệ
+                let shouldHighlight = true;
+                try {
+                    const highlightCheckbox = document.getElementById('highlight-tokens');
+                    if (highlightCheckbox) {
+                        shouldHighlight = highlightCheckbox.checked;
+                    }
+                } catch (e) {
+                    console.warn("Không thể đọc trạng thái highlight:", e);
+                }
+                
+                // Highlight từ nếu được yêu cầu
+                if (shouldHighlight && !options.isWordByWord) {
+                    try {
+                        highlightText(text);
+                    } catch (highlightErr) {
+                        console.warn("Lỗi khi highlight text:", highlightErr);
+                    }
+                }
+                
+                // Thử API của server trước
+                useServerTTS(text, speed)
+                    .catch(e => {
+                        console.error("Không thể sử dụng phát âm server:", e);
+                        // Nếu API server thất bại, thử dùng API của trình duyệt
+                        useBrowserTTS(text, speed);
+                    });
+            } catch (e) {
+                console.error("Lỗi trong hàm speakKorean:", e);
+                // Phương án dự phòng
+                try {
+                    useBrowserTTS(text, speed);
+                } catch (fallbackError) {
+                    console.error("Không thể sử dụng phát âm dự phòng:", fallbackError);
+                    alert("Không thể phát âm văn bản. Vui lòng thử lại sau.");
+                }
+            }
+        }
+
+        // Hàm highlight từ đang được đọc
+        function highlightText(text) {
+            // Tìm container chứa nội dung phát âm
+            const container = document.querySelector('.pronunciation-guide');
+            if (!container) return;
+            
+            // Tìm phần tử hiển thị văn bản tiếng Hàn
+            const textElement = container.querySelector('span.font-medium');
+            if (!textElement) return;
+            
+            // Lấy văn bản gốc
+            const originalText = textElement.textContent;
+            
+            // Nếu đang highlight text đang được đọc
+            if (text === originalText) {
+                // Tách từng từ và làm highlight
+                const words = originalText.split(/\s+/);
+                let highlightedHTML = '';
+                
+                words.forEach(word => {
+                    highlightedHTML += `<span class="token-highlight">${word}</span> `;
+                });
+                
+                textElement.innerHTML = highlightedHTML.trim();
+                
+                // Sau 5 giây, restore lại text ban đầu
+                setTimeout(() => {
+                    textElement.textContent = originalText;
+                }, 5000);
+            }
+        }
+
+        // Hàm để hiển thị/ẩn panel cài đặt phát âm
+        function togglePronunciationSettings() {
+            const settingsPanel = document.getElementById('pronunciation-settings-panel');
+            if (settingsPanel) {
+                settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // Hàm để hiển thị/ẩn nội dung mở rộng kiến thức
+        function toggleExpandKnowledge() {
+            const expandContent = document.getElementById('expand-knowledge-content');
+            if (expandContent) {
+                const isHidden = expandContent.style.display === 'none' || !expandContent.style.display;
+                expandContent.style.display = isHidden ? 'block' : 'none';
+                
+                // Nếu hiển thị, lấy dữ liệu mở rộng
+                if (isHidden) {
+                    // Lấy văn bản tiếng Hàn hiện tại
+                    const koreanText = document.querySelector('.pronunciation-guide span.font-medium')?.textContent || '';
+                    
+                    if (koreanText) {
+                        fetchExpandedKnowledge(koreanText);
+                    }
+                }
+            }
+        }
+
+        // Hàm để lấy dữ liệu kiến thức mở rộng
+        async function fetchExpandedKnowledge(text) {
+            try {
+                const expandContent = document.getElementById('expand-knowledge-content');
+                if (!expandContent) return;
+                
+                expandContent.innerHTML = `
+                    <div class="flex justify-center items-center p-3">
+                        <div class="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="ml-2 text-blue-600">Đang tải dữ liệu...</span>
+                    </div>
+                `;
+                
+                // Gọi API để lấy các biến thể của câu
+                const response = await fetch('/korean_variations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Lỗi HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Hiển thị các biến thể
+                let html = `<div class="text-sm font-medium text-blue-800 mb-2">Các dạng tương đương:</div>
+                <div class="p-2 border-l-2 border-blue-200">`;
+                
+                if (data.variations && Array.isArray(data.variations) && data.variations.length > 0) {
+                    data.variations.forEach(variation => {
+                        let vietnameseTrans = '';
+                        // Kiểm tra xem có dịch tiếng Việt không (thêm vào)
+                        if (variation.vietnamese) {
+                            vietnameseTrans = `<div class="text-xs text-indigo-600">${variation.vietnamese}</div>`;
+                        }
+                        
+                        html += `
+                        <div class="flex items-center mb-3 p-2 bg-white rounded-md shadow-sm hover:shadow-md transition-shadow">
+                            <button class="pronunciation-button mr-2 py-1 px-2" onclick="speakKorean('${variation.text.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-play mr-1"></i>
+                            </button>
+                            <div class="flex-grow">
+                                <div class="text-indigo-800 font-medium">${variation.text}</div>
+                                <div class="text-xs text-gray-600">${variation.description || ''}</div>
+                                ${vietnameseTrans}
+                            </div>
+                            <div class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">${variation.level || ''}</div>
+                        </div>`;
+                    });
+                } else {
+                    html += `
+                    <div class="text-gray-600 italic">Không tìm thấy dạng tương đương.</div>`;
+                }
+                
+                html += `</div>`;
+                
+                // Thêm nút để người dùng xem giải thích về sự khác biệt ngữ pháp
+                html += `
+                <div class="mt-3">
+                    <button class="expand-knowledge-btn bg-indigo-50 hover:bg-indigo-100" onclick="showGrammarExplanation('${text.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-info-circle mr-1"></i> Xem giải thích ngữ pháp
+                    </button>
+                    <div id="grammar-explanation" class="expand-knowledge-content mt-2"></div>
+                </div>`;
+                
+                expandContent.innerHTML = html;
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu mở rộng:", error);
+                
+                const expandContent = document.getElementById('expand-knowledge-content');
+                if (expandContent) {
+                    expandContent.innerHTML = `
+                    <div class="text-red-600 p-2">
+                        <i class="fas fa-exclamation-circle mr-1"></i>
+                        Không thể lấy dữ liệu mở rộng: ${error.message || 'Lỗi không xác định'}
+                    </div>
+                    <div class="mt-2">
+                        <button class="pronunciation-button" onclick="fetchExpandedKnowledge('${text.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-sync-alt mr-1"></i> Thử lại
+                        </button>
+                    </div>
+                    `;
+                }
+            }
+        }
+
+        // Hàm để hiển thị giải thích ngữ pháp
+        async function showGrammarExplanation(text) {
+            const explanationDiv = document.getElementById('grammar-explanation');
+            if (!explanationDiv) return;
+            
+            if (explanationDiv.style.display === 'block') {
+                explanationDiv.style.display = 'none';
+                return;
+            }
+            
+            explanationDiv.style.display = 'block';
+            explanationDiv.innerHTML = `
+                <div class="flex justify-center items-center p-3">
+                    <div class="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span class="ml-2 text-blue-600">Đang lấy giải thích...</span>
+                </div>
+            `;
+            
+            try {
+                // Gọi API để lấy giải thích ngữ pháp
+                const response = await fetch('/korean_variations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Lỗi HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Lấy giải thích ngữ pháp từ dữ liệu API
+                const grammarExplanation = data.grammar_explanation || {};
+                
+                let explanationHTML = `<div class="text-sm bg-gray-50 p-3 rounded-md">`;
+                
+                // Giải thích luật ngữ pháp
+                if (grammarExplanation.rules) {
+                    explanationHTML += `
+                        <div class="mb-3">
+                            <div class="font-medium text-blue-800">Luật ngữ pháp:</div>
+                            <div class="mt-1 pl-2 border-l-2 border-blue-100">${formatContent(grammarExplanation.rules)}</div>
+                        </div>
+                    `;
+                }
+                
+                // Giải thích về các cấp độ
+                if (grammarExplanation.levels) {
+                    explanationHTML += `
+                        <div class="mb-3">
+                            <div class="font-medium text-blue-800">Cấp độ giao tiếp:</div>
+                            <div class="mt-1 pl-2 border-l-2 border-blue-100">${formatContent(grammarExplanation.levels)}</div>
+                        </div>
+                    `;
+                }
+                
+                // Giải thích về các đuôi câu
+                if (grammarExplanation.endings) {
+                    explanationHTML += `
+                        <div class="mb-3">
+                            <div class="font-medium text-blue-800">Đuôi kết thúc câu:</div>
+                            <div class="mt-1 pl-2 border-l-2 border-blue-100">${formatContent(grammarExplanation.endings)}</div>
+                        </div>
+                    `;
+                }
+                
+                // Ví dụ
+                if (grammarExplanation.examples) {
+                    explanationHTML += `
+                        <div class="mb-2">
+                            <div class="font-medium text-blue-800">Ví dụ:</div>
+                            <div class="mt-1 pl-2 border-l-2 border-blue-100">${formatContent(grammarExplanation.examples)}</div>
+                        </div>
+                    `;
+                }
+                
+                explanationHTML += `</div>`;
+                
+                // Hiển thị giải thích
+                explanationDiv.innerHTML = explanationHTML || `
+                    <div class="text-gray-600 italic p-3">
+                        Không có thông tin giải thích ngữ pháp.
+                    </div>
+                `;
+            } catch (error) {
+                console.error("Lỗi khi lấy giải thích ngữ pháp:", error);
+                explanationDiv.innerHTML = `
+                    <div class="text-red-600 p-2">
+                        <i class="fas fa-exclamation-circle mr-1"></i>
+                        Không thể lấy giải thích: ${error.message || 'Lỗi không xác định'}
+                    </div>
+                `;
+            }
+        }
+
+        // Sử dụng API TTS của server
+        async function useServerTTS(text, speed) {
+            try {
+                if (!text || typeof text !== 'string' || text.trim() === '') {
+                    return false;
+                }
+                
+                const response = await fetch('/tts_korean', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text, speed }),
+                });
+
+                if (!response.ok) {
+                    console.warn(`TTS API trả về lỗi HTTP: ${response.status}`);
+                    return false;
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.warn("API TTS trả về lỗi:", data.error);
+                    return false;
+                }
+                
+                if (data.audio) {
+                    try {
+                        // Tạo và phát audio từ base64
+                        const audio = new Audio(`data:audio/${data.format};base64,${data.audio}`);
+                        
+                        // Xử lý lỗi khi phát audio
+                        audio.onerror = (e) => {
+                            console.error("Lỗi khi phát audio:", e);
+                            return false;
+                        };
+                        
+                        // Phát audio
+                        audio.play().catch(e => {
+                            console.error("Lỗi khi phát audio:", e);
+                            return false;
+                        });
+                        
+                        return true;
+                    } catch (audioErr) {
+                        console.error("Lỗi khi xử lý audio:", audioErr);
+                        return false;
+                    }
+                }
+                
+                return false;
+            } catch (error) {
+                console.error("Lỗi khi gọi API TTS:", error);
+                return false;
+            }
+        }
+
+        // Sử dụng Web Speech API của trình duyệt
+        function useBrowserTTS(text, speed) {
+            if (!text || typeof text !== 'string' || text.trim() === '') {
+                console.warn("useBrowserTTS: Văn bản trống hoặc không hợp lệ");
+                return;
+            }
+            
+            try {
+                const speechSynthesis = window.speechSynthesis;
+                if (!speechSynthesis) {
+                    console.warn("Trình duyệt không hỗ trợ SpeechSynthesis API");
+                    return;
+                }
+                
+                // Dừng tất cả các phát âm đang chạy
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Xử lý lỗi phát âm
+                utterance.onerror = (error) => {
+                    console.error("Lỗi SpeechSynthesis:", error);
+                };
+                
+                // Tìm giọng tiếng Hàn
+                let koreanVoice = null;
+                const voices = speechSynthesis.getVoices();
+                
+                for (const voice of voices) {
+                    if (voice.lang.includes('ko')) {
+                        koreanVoice = voice;
+                        break;
+                    }
+                }
+                
+                // Nếu không tìm thấy giọng tiếng Hàn, dùng giọng mặc định
+                utterance.voice = koreanVoice;
+                utterance.lang = 'ko-KR';
+                
+                // Xử lý tốc độ
+                try {
+                    utterance.rate = parseFloat(speed) || 1.0;
+                    if (isNaN(utterance.rate) || utterance.rate < 0.1 || utterance.rate > 2) {
+                        utterance.rate = 1.0;
+                    }
+                } catch (e) {
+                    utterance.rate = 1.0;
+                }
+                
+                // Bắt đầu phát âm
+                speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error("Lỗi khi sử dụng SpeechSynthesis API:", error);
+            }
+        }
+
+        // Cập nhật hiển thị tốc độ phát âm khi thay đổi
+        document.addEventListener('DOMContentLoaded', function() {
+            // Xử lý khi người dùng thay đổi tốc độ phát âm
+            document.body.addEventListener('input', function(e) {
+                if (e.target && e.target.id === 'pronunciation-speed') {
+                    const speedValue = document.getElementById('speed-value');
+                    if (speedValue) {
+                        speedValue.textContent = parseFloat(e.target.value).toFixed(1) + 'x';
+                    }
+                }
+            });
+            
+            // Khởi tạo danh sách giọng nói nếu cần
+            if ('speechSynthesis' in window) {
+                // Nếu danh sách giọng nói đã sẵn sàng
+                if (window.speechSynthesis.getVoices().length > 0) {
+                    // Đã có danh sách giọng nói
+                }
+                // Nếu danh sách giọng nói chưa sẵn sàng, đăng ký sự kiện
+                window.speechSynthesis.onvoiceschanged = function() {
+                    // Danh sách giọng nói đã sẵn sàng
+                };
+            }
+        });
+
+        // Xử lý form submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const koreanText = input.value.trim();
+            
+            // Kiểm tra xem có nội dung để gửi không
+            if (!koreanText && !imageBase64) {
+                alert('Vui lòng nhập văn bản tiếng Hàn hoặc tải ảnh lên.');
+                return;
+            }
+            
+            // Kiểm tra nếu là yêu cầu mnemonics
+            if (koreanText.toLowerCase().includes('nhớ từ') || 
+                koreanText.toLowerCase().includes('ghi nhớ') || 
+                koreanText.toLowerCase().includes('mnemonics')) {
+                
+                // Trích xuất từ vựng cần ghi nhớ từ input
+                const wordMatch = koreanText.match(/nhớ từ\s+["']([^"']+)["']/) || 
+                                 koreanText.match(/ghi nhớ\s+["']([^"']+)["']/) || 
+                                 koreanText.match(/mnemonics\s+["']([^"']+)["']/);
+                
+                let word = '';
+                if (wordMatch && wordMatch[1]) {
+                    word = wordMatch[1].trim();
+                } else {
+                    // Nếu không tìm thấy từ trong pattern cụ thể, lấy từ cuối cùng
+                    const words = koreanText.split(/\s+/);
+                    for (let i = words.length - 1; i >= 0; i--) {
+                        // Kiểm tra xem có phải từ tiếng Hàn không
+                        if (/[\uAC00-\uD7A3]/.test(words[i])) {
+                            word = words[i].replace(/[.,?!;:'"]/g, '').trim();
+                            break;
+                        }
+                    }
+                }
+                
+                if (!word) {
+                    alert('Không thể xác định từ vựng tiếng Hàn cần ghi nhớ. Vui lòng thử lại với cú pháp: "ghi nhớ từ \'từ_tiếng_hàn\'"');
+                    return;
+                }
+                
+                // Hiển thị loading
+                loadingDiv.style.display = 'block';
+                resultsDiv.classList.add('hidden');
+                
+                try {
+                    // Gửi request tạo mnemonics
+                    const response = await fetch('/create_mnemonics_api', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ text: word })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        // Hiển thị phương pháp ghi nhớ
+                        displayMnemonics(data);
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tạo mnemonics:', error);
+                    alert('Đã xảy ra lỗi khi tạo phương pháp ghi nhớ. Vui lòng thử lại.');
+                } finally {
+                    // Ẩn loading
+                    loadingDiv.style.display = 'none';
+                    resultsDiv.classList.remove('hidden');
+                }
+                
+                return;
+            }
+            
+            // Tiếp tục xử lý phân tích thông thường
+            // Hiển thị loading
+            loadingDiv.style.display = 'block';
+            resultsDiv.classList.add('hidden');
+            
+            // Xóa thông báo lỗi cũ
+            resultsDiv.querySelectorAll('.error-message').forEach(el => el.remove());
+            
+            // Chuẩn bị dữ liệu gửi đi
+            const formData = {
+                text: koreanText
+            };
+            
+            // Thêm ảnh nếu có
+            if (imageBase64) {
+                try {
+                    // Chỉ lấy phần base64 (bỏ header "data:image/jpeg;base64,")
+                    const base64Parts = imageBase64.split(',');
+                    if (base64Parts.length > 1) {
+                        formData.image = base64Parts[1];
+                    } else {
+                        formData.image = imageBase64;
+                    }
+                    
+                    // Kiểm tra dữ liệu base64 có hợp lệ không
+                    if (!formData.image || typeof formData.image !== 'string' || formData.image.trim() === '') {
+                        console.error("Dữ liệu ảnh không hợp lệ");
+                        throw new Error("Dữ liệu ảnh không hợp lệ. Vui lòng thử lại với ảnh khác.");
+                    }
+                } catch (imageError) {
+                    console.error("Lỗi xử lý ảnh:", imageError);
+                    displayError("Lỗi xử lý ảnh: " + imageError.message);
+                    loadingDiv.style.display = 'none';
+                    return;
+                }
+            }
+
+            try {                
+                // Gọi API phân tích
+                const response = await fetch('/analyze_korean', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                // Kiểm tra lỗi
+                if (data.error) {
+                    // Kiểm tra và xử lý lỗi SOURCE_LANG_VI riêng
+                    if (data.error === 'SOURCE_LANG_VI' || handleSourceLangError(data.error)) {
+                        loadingDiv.style.display = 'none';
+                        return;
+                    }
+                    
+                    throw new Error(data.error);
+                }
+                
+                // Hiển thị kết quả
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Lỗi khi gọi API phân tích:', error);
+                displayError(`${error.message || 'Lỗi không xác định'}. Vui lòng thử lại.`);
+            } finally {
+                // Ẩn loading
+                loadingDiv.style.display = 'none';
+            }
+        });
+
+        // Xử lý nút reset
+        document.getElementById('reset-btn').addEventListener('click', function() {
+            // Reset form
+            document.getElementById('korean-form').reset();
+            document.getElementById('image-preview').style.display = 'none';
+            
+            // Reset các phần hiện tại một cách an toàn
+            resetResultsSafely();
+            
+            // Ẩn kết quả
+            const resultsDiv = document.getElementById('results');
+            if (resultsDiv) {
+                resultsDiv.classList.add('hidden');
+                
+                // Xóa thông báo lỗi nếu có
+                resultsDiv.querySelectorAll('.error-container, .error-message').forEach(el => el.remove());
+            }
+            
+            // Reset dữ liệu API
+            fetch('/reset_chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    console.error('Lỗi khi reset chat');
+                }
+            }).catch(error => {
+                console.error('Lỗi:', error);
+            });
+        });
+
+        // Hiển thị kết quả phân tích
+        function displayResults(data) {
+            try {
+                // Reset các phần hiện tại một cách an toàn
+                resetResultsSafely();
+                
+                // Lấy các phần tử DOM một lần và kiểm tra tồn tại
+                const conversationSection = validateElement('conversation-section', 'Phần hội thoại');
+                const conversationContent = validateElement('conversationContent', 'Nội dung hội thoại');
+                const vocabSection = validateElement('vocab-section', 'Phần từ vựng');
+                const vocabContent = validateElement('vocabContent', 'Nội dung từ vựng');
+                const grammarSection = validateElement('grammar-section', 'Phần ngữ pháp');
+                const grammarContent = validateElement('grammarContent', 'Nội dung ngữ pháp');
+                const translationSection = validateElement('translation-section', 'Phần dịch thuật');
+                const translationContent = validateElement('translationContent', 'Nội dung dịch thuật');
+                const examplesSection = validateElement('examples-section', 'Phần ví dụ');
+                const examplesContent = validateElement('examplesContent', 'Nội dung ví dụ');
+                const cultureSection = validateElement('culture-section', 'Phần văn hóa');
+                const cultureContent = validateElement('cultureContent', 'Nội dung văn hóa');
+                const pronunciationSection = validateElement('pronunciation-section', 'Phần phát âm');
+                const pronunciationContent = validateElement('pronunciationContent', 'Nội dung phát âm');
+                const lessonSection = validateElement('lesson-section', 'Phần bài học');
+                const lessonTopic = validateElement('lessonTopic', 'Chủ đề bài học');
+                
+                // 1. Phản hồi giao tiếp
+                if (data.conversation_response && conversationSection && conversationContent) {
+                    // Xử lý cuộc hội thoại đẹp hơn
+                    if (data.conversation_response.includes('Người 1') || data.conversation_response.includes('Người 2')) {
+                        const lines = data.conversation_response.split('\n');
+                        let chatHTML = '<div class="chat-container">';
+                        let currentSpeaker = '';
+                        let currentContent = '';
+
+                        lines.forEach(line => {
+                            // Kiểm tra nếu là dòng mới của người nói
+                            if (line.startsWith('Người 1') || line.startsWith('Người 2')) {
+                                // Thêm nội dung trước đó vào HTML nếu có
+                                if (currentSpeaker && currentContent.trim()) {
+                                    const isUser = currentSpeaker.includes('Người 1');
+                                    chatHTML += `
+                                        <div class="chat-message ${isUser ? 'user' : 'other'}">
+                                            <div class="chat-avatar">
+                                                <i class="fas fa-${isUser ? 'user' : 'user-friends'}"></i>
+                                            </div>
+                                            <div class="chat-bubble">
+                                                <div class="chat-header">${currentSpeaker}</div>
+                                                <div class="chat-text">${currentContent}</div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                                
+                                // Bắt đầu nội dung mới
+                                currentSpeaker = line.split(':')[0].trim();
+                                currentContent = line.substring(line.indexOf(':') + 1).trim();
+                            } else {
+                                // Thêm vào nội dung hiện tại
+                                currentContent += '<br>' + line;
+                            }
+                        });
+
+                        // Thêm phần cuối cùng nếu còn
+                        if (currentSpeaker && currentContent.trim()) {
+                            const isUser = currentSpeaker.includes('Người 1');
+                            chatHTML += `
+                                <div class="chat-message ${isUser ? 'user' : 'other'}">
+                                    <div class="chat-avatar">
+                                        <i class="fas fa-${isUser ? 'user' : 'user-friends'}"></i>
+                                    </div>
+                                    <div class="chat-bubble">
+                                        <div class="chat-header">${currentSpeaker}</div>
+                                        <div class="chat-text">${currentContent}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        chatHTML += '</div>';
+                        conversationContent.innerHTML = chatHTML;
+                    } else {
+                        // Trường hợp không phải hội thoại, dùng format thông thường
+                        conversationContent.innerHTML = formatContent(data.conversation_response);
+                    }
+                    showElementSafely('conversation-section');
+                }
+
+                // 2. Bài học ngữ pháp
+                if (data.topic && lessonSection && lessonTopic) {
+                    lessonTopic.textContent = data.topic;
+                    
+                    // Điền nội dung cho từng phần của bài học
+                    if (typeof lessonSections === 'object') {
+                        Object.entries(lessonSections).forEach(([key, container]) => {
+                            const content = data[key];
+                            
+                            if (container && content) {
+                                // Xử lý đặc biệt cho examples
+                                if (key === 'examples' && Array.isArray(content)) {
+                                    container.innerHTML = renderExamples(content);
+                                } else {
+                                    container.innerHTML = formatContent(content);
+                                }
+                                
+                                // Kiểm tra trước khi truy cập thuộc tính parentNode
+                                if (container.parentNode) {
+                                    container.parentNode.style.display = 'block';
+                                }
+                            } else if (container && container.parentNode) {
+                                container.parentNode.style.display = 'none';
+                            }
+                        });
+                    }
+                    
+                    showElementSafely('lesson-section');
+                } else {
+                    // 3. Phân tích ngôn ngữ
+                    
+                    // 3a. Từ vựng
+                    if (data.vocabulary && data.vocabulary.length > 0 && vocabSection && vocabContent) {
+                        vocabContent.innerHTML = renderVocabularyTable(data.vocabulary);
+                        showElementSafely('vocab-section');
+                    }
+
+                    // 3b. Ngữ pháp - Hỗ trợ nhiều luật ngữ pháp
+                    if ((data.grammar || data.grammar_formula) && grammarSection && grammarContent) {
+                        grammarContent.innerHTML = data.grammar || data.grammar_formula;
+                        showElementSafely('grammar-section');
+                    }
+
+                    // 3c. Dịch thuật
+                    if (data.translation && translationSection && translationContent) {
+                        translationContent.innerHTML = `
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-gray-50 p-3 rounded-md">
+                                    <div class="text-gray-600 mb-1 text-sm">Nghĩa đen:</div>
+                                    <div class="text-gray-800">${data.translation.literal || 'N/A'}</div>
+                                </div>
+                                <div class="bg-blue-50 p-3 rounded-md">
+                                    <div class="text-gray-600 mb-1 text-sm">Nghĩa tự nhiên:</div>
+                                    <div class="text-blue-800 font-medium">${data.translation.natural || 'N/A'}</div>
+                                </div>
+                                <div class="bg-indigo-50 p-3 rounded-md">
+                                    <div class="text-gray-600 mb-1 text-sm flex justify-between">
+                                        <span>Nghĩa gốc (tiếng Hàn):</span>
+                                        ${data.translation.original ? `
+                                        <button class="pronunciation-button py-0.5 px-1.5 text-xs" onclick="speakKorean('${data.translation.original.replace(/'/g, "\\'")}')">
+                                            <i class="fas fa-play mr-1"></i> Nghe
+                                        </button>` : ''}
+                                    </div>
+                                    <div class="text-indigo-800 font-medium">${data.translation.original || data.translation.korean || 'N/A'}</div>
+                                </div>
+                            </div>
+                        `;
+                        showElementSafely('translation-section');
+                    }
+
+                    // 3d. Ví dụ
+                    if (data.examples && data.examples.length > 0 && examplesSection && examplesContent) {
+                        handleExampleSection(data, examplesSection, examplesContent);
+                    }
+
+                    // 3e. Văn hóa
+                    if (typeof data.culture === 'string' && data.culture.trim() !== '' && cultureSection && cultureContent) {
+                        cultureContent.innerHTML = `
+                            <div class="bg-yellow-50 p-4 rounded-md border-l-4 border-yellow-400">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="font-medium text-yellow-800"><i class="fas fa-info-circle mr-1"></i> Đặc điểm văn hóa:</h4>
+                                    ${data.culture_text ? `
+                                    <button class="pronunciation-button py-0.5 px-2 text-xs" onclick="speakKorean('${data.culture_text.replace(/'/g, "\\'")}')">
+                                        <i class="fas fa-volume-up mr-1"></i> Nghe
+                                    </button>` : ''}
+                                </div>
+                                <p class="text-yellow-800">${formatContent(data.culture)}</p>
+                            </div>
+                        `;
+                        showElementSafely('culture-section');
+                    }
+
+                    // 3f. Phát âm
+                    if (data.pronunciation && pronunciationSection && pronunciationContent) {
+                        // Xử lý hiển thị phát âm theo dạng chính phóng
+                        const koreanText = data.text || data.korean || '';
+                        let pronunciationDisplay = data.pronunciation;
+                        
+                        // Nếu có cả text tiếng Hàn và phát âm, hiển thị theo từng từ
+                        if (koreanText && data.pronunciation) {
+                            try {
+                                // Cố gắng hiển thị song song
+                                pronunciationDisplay = formatKoreanPhonetics(koreanText, data.pronunciation);
+                            } catch (e) {
+                                console.error('Lỗi khi định dạng phát âm:', e);
+                                // Giữ nguyên nếu lỗi
+                            }
+                        }
+                        
+                        // Chuẩn bị ví dụ phát âm nếu có
+                        const pronunciationExamples = data.pronunciation_examples || [];
+                        const examplesHtml = displayPronunciationExamples(pronunciationExamples);
+                        
+                        pronunciationContent.innerHTML = `
+                            <div class="bg-amber-50 p-4 rounded-md">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="font-medium text-amber-700"><i class="fas fa-volume-up mr-1"></i> Cách phát âm:</h4>
+                                    <button class="pronunciation-button large" data-text="${koreanText.replace(/"/g, '&quot;')}">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                </div>
+                                <div class="pronunciation-guide p-3 bg-white rounded-md border border-amber-200">
+                                    ${pronunciationDisplay}
+                                    ${koreanText && !pronunciationDisplay.includes(koreanText) ? 
+                                        `<div class="korean-original mt-2">${koreanText}</div>` : ''}
+                                </div>
+                                ${examplesHtml}
+                                <div class="mt-3 text-sm text-amber-600">
+                                    <i class="fas fa-info-circle mr-1"></i> Nhấn vào nút phát âm để nghe và luyện phát âm chuẩn.
+                                </div>
+                            </div>
+                        `;
+                        showElementSafely('pronunciation-section');
+                        
+                        // Khởi tạo lại các nút phát âm
+                        setupPronunciationButtons();
+                    }
+                }
+                
+                // Hiển thị kết quả
+                const resultsDiv = document.getElementById('results');
+                if (resultsDiv) {
+                    resultsDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Lỗi khi hiển thị kết quả:', error);
+                displayDOMError(`Lỗi khi hiển thị kết quả: ${error.message || 'Lỗi không xác định'}`, 'results');
+            }
+        }
+
+        // Hàm format nội dung
+        function formatContent(text) {
+            if (!text) return '';
+            // Thay thế xuống dòng bằng thẻ <br>
+            return text.replace(/\n/g, '<br>');
+        }
+
+        // Thiết lập các điều khiển phát âm
+        function setupPronunciationControls() {
+            // Cập nhật giá trị hiển thị tốc độ phát âm
+            const speedControl = document.getElementById('pronunciation-speed');
+            const speedValue = document.getElementById('speed-value');
+            
+            if (speedControl && speedValue) {
+                speedControl.addEventListener('input', function() {
+                    speedValue.textContent = `${speedControl.value}x`;
+                });
+            }
+            
+            // Xử lý hiển thị/ẩn bảng cài đặt
+            const settingsToggle = document.querySelector('.pronunciation-settings');
+            if (settingsToggle) {
+                settingsToggle.addEventListener('click', function() {
+                    togglePronunciationSettings();
+                });
+            }
+        }
+
+        // Hàm hiển thị kết quả mnemonics
+        function displayMnemonics(data) {
+            try {
+                // Reset kết quả hiện tại
+                resetResultsSafely();
+                
+                // Lấy các phần tử DOM một lần và kiểm tra tồn tại
+                const conversationSection = validateElement('conversation-section', 'Phần hội thoại');
+                const conversationContent = validateElement('conversationContent', 'Nội dung hội thoại');
+                const mnemonicsSection = validateElement('mnemonics-section', 'Phần ghi nhớ');
+                const mnemonicsContent = validateElement('mnemonicsContent', 'Nội dung ghi nhớ');
+                
+                // Hiển thị phần hội thoại
+                if (conversationSection && conversationContent) {
+                    conversationContent.innerHTML = `<p>Dưới đây là phương pháp ghi nhớ cho từ vựng <strong>${data.word}</strong>:</p>`;
+                    showElementSafely('conversation-section');
+                }
+                
+                // Hiển thị phần mnemonics
+                if (mnemonicsSection && mnemonicsContent) {
+                    // Tạo HTML cho nội dung mnemonics
+                    let mnemonicsHTML = `
+                        <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                            <h4 class="text-lg font-semibold text-purple-800">${data.word}</h4>
+                            <div class="flex justify-between items-center">
+                                <p class="text-gray-600 mb-1"><span class="italic">${data.pronunciation}</span> - ${data.meaning}</p>
+                                <button class="pronunciation-button py-1 px-2" data-text="${data.word.replace(/"/g, '&quot;')}">
+                                    <i class="fas fa-volume-up mr-1"></i> Nghe
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="methods space-y-3 mb-6">
+                            <h4 class="font-medium text-purple-700"><i class="fas fa-lightbulb mr-1"></i> Phương pháp ghi nhớ:</h4>
+                    `;
+                    
+                    // Thêm các phương pháp ghi nhớ
+                    data.mnemonics.forEach((method, index) => {
+                        mnemonicsHTML += `
+                            <div class="method bg-white p-3 border border-purple-100 rounded-md">
+                                <h5 class="font-medium text-purple-600">${index + 1}. ${method.title}</h5>
+                                <p class="text-gray-700 mt-1">${method.description}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    // Thêm các ví dụ
+                    mnemonicsHTML += `
+                        <div class="examples mt-4">
+                            <h4 class="font-medium text-purple-700 mb-2"><i class="fas fa-list-ul mr-1"></i> Ví dụ:</h4>
+                            <ul class="space-y-2">
+                    `;
+                    
+                    data.examples.forEach(example => {
+                        mnemonicsHTML += `
+                            <li class="example bg-white p-3 border border-purple-100 rounded-md">
+                                <div class="flex justify-between items-center">
+                                    <p class="font-medium text-purple-800">${example.korean}</p>
+                                    <button class="pronunciation-button py-0.5 px-1.5 text-xs" data-text="${example.korean.replace(/"/g, '&quot;')}">
+                                        <i class="fas fa-volume-up mr-1"></i> Nghe
+                                    </button>
+                                </div>
+                                <p class="text-gray-700">${example.vietnamese}</p>
+                            </li>
+                        `;
+                    });
+                    
+                    mnemonicsHTML += `
+                            </ul>
+                        </div>
+                    `;
+                    
+                    // Thêm các từ liên quan
+                    mnemonicsHTML += `
+                        <div class="related-words mt-4">
+                            <h4 class="font-medium text-purple-700 mb-2"><i class="fas fa-project-diagram mr-1"></i> Từ liên quan:</h4>
+                            <div class="flex flex-wrap gap-2">
+                    `;
+                    
+                    data.related_words.forEach(related => {
+                        mnemonicsHTML += `
+                            <div class="bg-white px-3 py-1 border border-purple-100 rounded-full flex items-center gap-2">
+                                <span class="font-medium text-purple-800">${related.word}</span>
+                                <span class="text-gray-600 text-sm"> - ${related.meaning}</span>
+                                <button class="pronunciation-button py-0.5 px-1 text-xs ml-1" data-text="${related.word.replace(/"/g, '&quot;')}">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    
+                    mnemonicsHTML += `
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Chèn HTML vào container
+                    mnemonicsContent.innerHTML = mnemonicsHTML;
+                    showElementSafely('mnemonics-section');
+                    
+                    // Thiết lập các nút phát âm
+                    if (typeof setupPronunciationButtons === 'function') {
+                        setTimeout(() => {
+                            setupPronunciationButtons();
+                        }, 100);
+                    }
+                }
+                
+                // Hiển thị kết quả
+                const resultsDiv = document.getElementById('results');
+                if (resultsDiv) {
+                    resultsDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Lỗi khi hiển thị kết quả mnemonics:', error);
+                displayDOMError(`Lỗi khi hiển thị kết quả ghi nhớ: ${error.message || 'Lỗi không xác định'}`, 'mnemonicsContent');
+            }
+        }
+
+        // Hàm reset kết quả hiện tại
+        function resetResults() {
+            // Ẩn tất cả các phần kết quả
+            document.querySelectorAll('.result-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Reset nội dung của các phần
+            conversationContent.innerHTML = '';
+            vocabContent.innerHTML = '';
+            grammarContent.innerHTML = '';
+            translationContent.innerHTML = '';
+            examplesContent.innerHTML = '';
+            cultureContent.innerHTML = '';
+            pronunciationContent.innerHTML = '';
+            mnemonicsContent.innerHTML = '';
+            
+            // Reset nội dung cho bài học ngữ pháp
+            lessonTopic.textContent = '';
+            Object.values(lessonSections).forEach(section => {
+                section.innerHTML = '';
+            });
+        }
+
+        // Thêm sự kiện click cho các ví dụ mnemonics
+        document.querySelectorAll('.mnemonic-example').forEach(example => {
+            example.addEventListener('click', () => {
+                input.value = example.textContent;
+                input.focus();
+                // Cuộn lên đầu form nếu cần
+                form.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Hàm hiển thị và làm nổi bật từ tiếng Hàn
+        function highlightKoreanWords(text) {
+            if (!text) return '';
+            
+            // Tạo regex để nhận dạng các chuỗi ký tự Hangul
+            const koreanRegex = /[\uAC00-\uD7A3]+/g;
+            
+            // Thay thế các từ tiếng Hàn bằng phiên bản được làm nổi bật
+            return text.replace(koreanRegex, match => {
+                return `<span class="korean-word">${match}</span>`;
+            });
+        }
+
+        // Hàm đọc file dưới dạng base64
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Hàm xử lý lỗi và hiển thị thông báo lỗi
+        function displayError(message) {
+            const errorContainer = document.createElement('div');
+            errorContainer.className = 'error-container mb-4';
+            errorContainer.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${message}`;
+            
+            // Xóa các thông báo lỗi cũ trước khi thêm mới
+            document.querySelectorAll('.error-container').forEach(element => {
+                element.remove();
+            });
+            
+            // Thêm thông báo lỗi vào trên cùng của kết quả
+            resultsDiv.prepend(errorContainer);
+            resultsDiv.classList.remove('hidden');
+        }
+
+        // Hàm kiểm tra và xử lý lỗi SOURCE_LANG_VI
+        function handleSourceLangError(error) {
+            if (error === 'SOURCE_LANG_VI') {
+                displayError('Đã phát hiện văn bản tiếng Việt. HangulMate được thiết kế để phân tích văn bản tiếng Hàn. Vui lòng nhập văn bản tiếng Hàn để được phân tích.');
+                return true;
+            }
+            return false;
+        }
+
+        // Thêm nút phát âm cho ví dụ hiển thị trong trang
+        function setupPronunciationButtons() {
+            $('.pronunciation-button').on('click', function(e) {
+                e.preventDefault();
+                
+                // Thiết lập giao diện trực quan khi phát âm
+                $('.pronunciation-button').removeClass('playing');
+                $('.playing-text').removeClass('playing-text');
+                
+                const button = $(this);
+                const textElement = button.closest('.example-item, .pronunciation-block').find('.example-korean, .korean-text');
+                
+                // Highlight text đang phát âm
+                if (textElement.length) {
+                    textElement.addClass('playing-text');
+                }
+                
+                // Thêm class playing cho button
+                button.addClass('playing');
+                
+                // Lấy text để phát âm
+                const textToSpeak = button.data('text') || button.closest('.example-item, .pronunciation-block').find('.example-korean, .korean-text').text();
+                
+                if (textToSpeak) {
+                    speakKorean(textToSpeak, function() {
+                        // Callback khi kết thúc phát âm
+                        button.removeClass('playing');
+                        textElement.removeClass('playing-text');
+                    });
+                }
+            });
+        }
+
+        // Cập nhật hàm speakKorean để hỗ trợ callback khi kết thúc
+        function speakKorean(text, callback) {
+            if (!text) return;
+            
+            // Dừng phát âm hiện tại nếu có
+            window.speechSynthesis.cancel();
+            
+            // Lấy tốc độ phát âm từ thanh trượt
+            const speedControl = document.getElementById('pronunciation-speed');
+            const rate = speedControl ? parseFloat(speedControl.value) : 1.0;
+            
+            // Tạo đối tượng speech
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            utterance.rate = rate;
+            
+            // Thêm callback khi kết thúc phát âm
+            if (typeof callback === 'function') {
+                utterance.onend = callback;
+            }
+            
+            // Bắt đầu phát âm
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Cập nhật hàm hiển thị ví dụ phát âm
+        function displayPronunciationExamples(examples) {
+            if (!examples || !examples.length) return '';
+            
+            let html = '<div class="pronunciation-examples mt-4">';
+            html += '<h4 class="font-medium text-amber-700 mb-2"><i class="fas fa-graduation-cap mr-1"></i> Ví dụ phát âm:</h4>';
+            
+            examples.forEach(example => {
+                html += `
+                <div class="pronunciation-block">
+                    <div class="pronunciation-text">
+                        <div class="korean-text">${example.korean}</div>
+                        <div class="pronunciation-phonetics">${example.pronunciation || ''}</div>
+                        <div class="example-translation text-gray-700 mt-1">${example.vietnamese || ''}</div>
+                    </div>
+                    <button class="pronunciation-button" data-text="${example.korean.replace(/"/g, '&quot;')}">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Thêm cập nhật cho phần phát âm trong bài riêng
+        function formatPronunciation(text) {
+            if (!text) return '';
+            
+            // Tách phát âm thành các thành phần có thể nhấn vào để nghe
+            const segments = text.split(/\s+/);
+            let html = '';
+            
+            segments.forEach(segment => {
+                if (segment.trim()) {
+                    const hasKorean = /[\uAC00-\uD7A3]/.test(segment);
+                    if (hasKorean) {
+                        html += `<span class="pronunciation-segment" onclick="speakKorean('${segment.replace(/'/g, "\\'")}')">
+                            ${segment} <i class="fas fa-volume-up text-xs text-amber-500"></i>
+                        </span> `;
+                    } else {
+                        html += `<span>${segment}</span> `;
+                    }
+                }
+            });
+            
+            return html.trim();
+        }
+
+        // Khởi tạo các chức năng khi trang tải xong
+        $(document).ready(function() {
+            // ... existing code ...
+            setupPronunciationButtons();
+            
+            // Thêm thanh điều chỉnh tốc độ phát âm vào body
+            $('body').append(speedControlHtml);
+            
+            // Cập nhật giá trị hiển thị khi thay đổi tốc độ
+            $('#pronunciation-speed').on('input', function() {
+                $('#speed-value').text($(this).val() + 'x');
+            });
+            
+            // Khởi tạo giá trị ban đầu
+            $('#speed-value').text($('#pronunciation-speed').val() + 'x');
+        });
+
+        // Cập nhật phần hiển thị ví dụ tiếng Hàn trong phát âm
+        function formatKoreanPhonetics(korean, phonetics) {
+            if (!korean || !phonetics) return phonetics || korean || '';
+            
+            // Xử lý định dạng phát âm đặc biệt như: 호두 (hodu) [Tiếng Việt: hô đu]
+            // Biểu thức chính quy để tách các phần của chuỗi phát âm
+            const phoneticPattern = /([가-힣]+)\s*\(([^)]+)\)(?:\s*\[Tiếng Việt:\s*([^\]]+)\])?/g;
+            
+            let match;
+            let formattedHTML = '';
+            
+            // Nếu có định dạng đặc biệt
+            if (phoneticPattern.test(phonetics)) {
+                // Reset regex index
+                phoneticPattern.lastIndex = 0;
+                
+                // Tách từng từ và định dạng riêng biệt
+                while ((match = phoneticPattern.exec(phonetics)) !== null) {
+                    const koreanWord = match[1];
+                    const romanization = match[2];
+                    const vietnamPronunciation = match[3] || '';
+                    
+                    formattedHTML += `
+                        <div class="korean-phonetic-word mb-3 bg-white p-3 rounded-md border border-amber-200">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="korean-word-text font-medium text-lg text-amber-800">${koreanWord}</span>
+                                <button class="pronunciation-button small" data-text="${koreanWord}" onclick="speakKorean('${koreanWord.replace(/'/g, "\\'")}')">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            </div>
+                            <div class="text-amber-700 italic">(${romanization})</div>
+                            ${vietnamPronunciation ? `<div class="text-gray-600 text-sm mt-1 vietnamese-pronunciation">[Tiếng Việt: ${vietnamPronunciation}]</div>` : ''}
+                    </div>
+                `;
+            }
+                
+                return formattedHTML;
+            }
+            
+            // Nếu phonetics chứa nhiều từ cách nhau bằng dấu phẩy, xử lý từng từ riêng biệt
+            if (phonetics.includes(',')) {
+                const words = phonetics.split(',').map(w => w.trim()).filter(w => w);
+                formattedHTML = `<div class="pronunciation-words-container">`;
+                
+                words.forEach(word => {
+                    // Tìm từ tiếng Hàn và phiên âm cho mỗi từ
+                    const wordMatch = word.match(/([가-힣]+)\s*\(([^)]+)\)(?:\s*\[Tiếng Việt:\s*([^\]]+)\])?/);
+                    
+                    if (wordMatch) {
+                        const koreanWord = wordMatch[1];
+                        const romanization = wordMatch[2];
+                        const vietnamPronunciation = wordMatch[3] || '';
+                        
+                        formattedHTML += `
+                            <div class="pronunciation-word-item mb-2 p-2 border border-amber-100 rounded">
+                                <div class="flex items-center justify-between">
+                                    <span class="korean-word-text font-medium">${koreanWord}</span>
+                                    <button class="pronunciation-button small" data-text="${koreanWord}" onclick="speakKorean('${koreanWord.replace(/'/g, "\\'")}')">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                </div>
+                                <div class="text-amber-700 italic text-sm">(${romanization})</div>
+                                ${vietnamPronunciation ? `<div class="text-gray-600 text-xs vietnamese-pronunciation">[Tiếng Việt: ${vietnamPronunciation}]</div>` : ''}
+                            </div>
+                        `;
+                    } else {
+                        // Xử lý trường hợp không có cấu trúc chuẩn
+                        formattedHTML += `
+                            <div class="pronunciation-word-item mb-2 p-2 border border-amber-100 rounded">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">${word}</span>
+                                    <button class="pronunciation-button small" data-text="${word}" onclick="speakKorean('${word.replace(/'/g, "\\'")}')">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                formattedHTML += `</div>`;
+                return formattedHTML;
+            }
+            
+            // Xử lý cho trường hợp đơn giản
+            try {
+                // Tìm tất cả các từ tiếng Hàn trong chuỗi
+                const koreanWords = korean.split(/\s+/);
+                const phoneticParts = phonetics.split(/\s+/);
+                
+                let html = '<div class="pronunciation-words-container">';
+                
+                // Xử lý từng từ
+                koreanWords.forEach((word, index) => {
+                    html += `
+                        <div class="pronunciation-word-item mb-2 p-2 bg-white rounded border border-amber-100">
+                            <div class="flex items-center justify-between">
+                                <span class="korean-word-text font-medium">${word}</span>
+                                <button class="pronunciation-button small" data-text="${word}" onclick="speakKorean('${word.replace(/'/g, "\\'")}')">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            </div>
+                            <div class="korean-word-phonetic text-sm text-amber-700 italic">${index < phoneticParts.length ? phoneticParts[index] : ''}</div>
+                        </div>
+                    `;
+                });
+            
+            html += '</div>';
+            return html;
+            } catch (e) {
+                console.error('Lỗi khi định dạng phát âm chi tiết:', e);
+                // Trả về dạng đơn giản nhất
+                return `<p class="font-medium">${phonetics}</p>`;
+            }
+        }
+
+        // Xử lý hiển thị phát âm cho phần Phát âm ở cuối trang
+        function displayPronunciationSection(data) {
+            // Hiển thị phần phát âm ở cuối
+            if (data && data.pronunciation_details) {
+                const pronunciationSection = document.getElementById('pronunciation-section');
+                const pronunciationContent = document.getElementById('pronunciation-content');
+                
+                if (pronunciationSection && pronunciationContent) {
+                    let html = `
+                    <div class="bg-amber-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-amber-800 mb-3"><i class="fas fa-comments mr-2"></i> Hướng dẫn phát âm</h3>
+                        <div class="space-y-4">
+                    `;
+                    
+                    // Hiển thị hướng dẫn chung
+                    if (data.pronunciation_guide) {
+                        html += `
+                        <div class="pronunciation-guide-box bg-white p-3 rounded-md border border-amber-200">
+                            <h4 class="font-medium text-amber-700 mb-2"><i class="fas fa-info-circle mr-1"></i> Lưu ý phát âm:</h4>
+                            <div class="text-gray-700">${data.pronunciation_guide}</div>
+                        </div>
+                        `;
+                    }
+                    
+                    // Hiển thị chi tiết phát âm từng âm
+                    if (Array.isArray(data.pronunciation_details)) {
+                        html += `<div class="pronunciation-details-list space-y-3">`;
+                        
+                        data.pronunciation_details.forEach(detail => {
+                            html += `
+                            <div class="pronunciation-detail-item bg-white p-3 rounded-md border border-amber-100 flex items-center">
+                                <div class="flex-grow">
+                                    <div class="font-medium text-amber-800">${detail.sound || ''}</div>
+                                    <div class="text-gray-600 text-sm">${detail.description || ''}</div>
+                                    ${detail.examples ? `
+                                    <div class="mt-1 flex flex-wrap gap-1">
+                                        ${detail.examples.map(ex => `
+                                        <span class="pronunciation-example cursor-pointer" 
+                                              onclick="speakKorean('${ex.replace(/'/g, "\\'")}')">
+                                            ${ex} <i class="fas fa-volume-up text-xs ml-1 text-amber-500"></i>
+                                        </span>`).join('')}
+                                    </div>` : ''}
+                                </div>
+                                <button class="pronunciation-button" data-text="${(detail.sound || '').replace(/"/g, '&quot;')}">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            </div>
+                            `;
+                        });
+                        
+                        html += `</div>`;
+                    }
+                    
+                    html += `
+                        </div>
+                    </div>
+                    `;
+                    
+                    pronunciationContent.innerHTML = html;
+                    pronunciationSection.style.display = 'block';
+                    
+                    // Khởi tạo lại nút phát âm
+                    setupPronunciationButtons();
+                }
+            }
+        }
+
+        // Xử lý hiển thị và phát âm cho các ví dụ tiếng Hàn trong trang detail
+        function setupExamplePronunciation() {
+            // Chọn tất cả các ví dụ tiếng Hàn trên trang
+            const exampleItems = document.querySelectorAll('.example-item');
+            
+            exampleItems.forEach(item => {
+                // Tìm phần tiếng Hàn trong ví dụ
+                const koreanText = item.querySelector('.example-korean, .korean-text');
+                
+                // Nếu không có nút phát âm, thêm vào
+                if (koreanText && !item.querySelector('.pronunciation-button')) {
+                    const text = koreanText.textContent.trim();
+                    
+                    // Tạo nút phát âm
+                    const button = document.createElement('button');
+                    button.className = 'pronunciation-button';
+                    button.setAttribute('data-text', text);
+                    button.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    
+                    // Thêm nút vào phần tử
+                    item.appendChild(button);
+                }
+            });
+            
+            // Khởi tạo lại nút phát âm
+            setupPronunciationButtons();
+        }
+
+        // Thêm vào hàm xử lý khi trang đã tải xong
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing code ...
+            
+            // Khởi tạo các nút phát âm trên trang
+            setupExamplePronunciation();
+            
+            // Thêm favicon để tránh lỗi 404
+            const favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            favicon.href = '/static/favicon.ico';
+            favicon.type = 'image/x-icon';
+            document.head.appendChild(favicon);
+        });
+
+        // Cập nhật hàm hiển thị ví dụ để xử lý các trường hợp khác nhau
+        function renderExamples(examples) {
+            if (!examples || !Array.isArray(examples) || examples.length === 0) {
+                return '<p class="text-gray-500 italic">Không có ví dụ.</p>';
+            }
+            
+            let html = '<div class="space-y-3">';
+            
+            examples.forEach((example, index) => {
+                // Kiểm tra xem example có phải là chuỗi hay object
+                let koreanText, pronunciation, meaningText;
+                
+                if (typeof example === 'string') {
+                    // Trường hợp ví dụ là chuỗi đơn giản
+                    // Tách phần tiếng Hàn và phần dịch (nếu có)
+                    const parts = example.split(' - ');
+                    koreanText = parts[0];
+                    meaningText = parts.length > 1 ? parts.slice(1).join(' - ') : '';
+                    
+                    // Kiểm tra xem có cấu trúc phiên âm không
+                    const phoneticsMatch = koreanText.match(/(.+)\s*\((.+)\)/);
+                    if (phoneticsMatch) {
+                        koreanText = phoneticsMatch[1];
+                        pronunciation = phoneticsMatch[2];
+                    }
+                } else {
+                    // Trường hợp ví dụ là object
+                    koreanText = example.korean || example.hangul || '';
+                    pronunciation = example.pronunciation || example.roman || '';
+                    meaningText = example.meaning || example.vietnamese || '';
+                }
+                    
+                    html += `
+                    <div class="example-item p-3 bg-white rounded-md border border-blue-100 hover:border-blue-300 transition-colors">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="example-korean font-medium text-blue-800">${koreanText}</div>
+                            <button class="pronunciation-button small" data-text="${koreanText}" onclick="speakKorean('${koreanText.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
+                        ${pronunciation ? `<div class="example-pronunciation text-sm text-gray-600 italic">${pronunciation}</div>` : ''}
+                        ${meaningText ? `<div class="example-translation text-gray-700 mt-1">${meaningText}</div>` : ''}
+                        </div>
+                    `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Hàm tạo phiên âm đơn giản từ tiếng Hàn
+        function createRomanizationFromKorean(koreanText) {
+            // Bảng chuyển đổi đơn giản từ Hangul sang phiên âm Latin
+            const koreanCharMap = {
+                'ㄱ': 'g', 'ㄲ': 'kk', 'ㄴ': 'n', 'ㄷ': 'd', 'ㄸ': 'tt',
+                'ㄹ': 'r', 'ㅁ': 'm', 'ㅂ': 'b', 'ㅃ': 'pp', 'ㅅ': 's',
+                'ㅆ': 'ss', 'ㅇ': '', 'ㅈ': 'j', 'ㅉ': 'jj', 'ㅊ': 'ch',
+                'ㅋ': 'k', 'ㅌ': 't', 'ㅍ': 'p', 'ㅎ': 'h',
+                'ㅏ': 'a', 'ㅐ': 'ae', 'ㅑ': 'ya', 'ㅒ': 'yae', 'ㅓ': 'eo',
+                'ㅔ': 'e', 'ㅕ': 'yeo', 'ㅖ': 'ye', 'ㅗ': 'o', 'ㅘ': 'wa',
+                'ㅙ': 'wae', 'ㅚ': 'oe', 'ㅛ': 'yo', 'ㅜ': 'u', 'ㅝ': 'wo',
+                'ㅞ': 'we', 'ㅟ': 'wi', 'ㅠ': 'yu', 'ㅡ': 'eu', 'ㅢ': 'ui',
+                'ㅣ': 'i'
+            };
+            
+            // Các từ và cụm từ cụ thể được định nghĩa sẵn
+            const commonWords = {
+                // Các từ trong ví dụ
+                '호두를': 'hodureul', '먹다': 'meokda', 
+                '이 부분을': 'i bubuneul', '빼다': 'ppaeda', 
+                '그 문제에': 'geu munjee', '개의하지 마세요': 'gaeuihaji maseyo', 
+                '좋은 소식을': 'jo-eun sosigeul', '바라다': 'barada', 
+                '지갑을': 'jigabeul', '잃어버리다': 'ireobeorida', 
+                '길에서': 'gireseo', '동전을': 'dongjeon-eul', '줍다': 'jupda', 
+                '추석은': 'chuseogeun', '한국의': 'hangugi', '명절이다': 'myeongjeo-rida',
+                
+                // Các từ đơn lẻ
+                '호두': 'hodu', '부분': 'bubun', '문제': 'munje', 
+                '개의하다': 'gaeuihada', '개의하지': 'gaeuihaji', '않다': 'anta',
+                '소식': 'sosik', '바라다': 'barada', '지갑': 'jigap', 
+                '잃어버리다': 'ireobeorida', '길': 'gil', '동전': 'dongjeon', 
+                '추석': 'chuseok', '명절': 'myeongjeol',
+                '좋은': 'jo-eun', '소식을': 'sosigeul', 
+                
+                // Từ các ví dụ cụ thể
+                '호두를 먹다': 'hodureul meokda',
+                '이 부분을 빼다': 'i bubuneul ppaeda',
+                '그 문제를 개의하지 않다': 'geu munjerul gaeuihaji anta',
+                '그 문제에 개의하지 않다': 'geu munjee gaeuihaji anta',
+                '좋은 소식을 바라다': 'jo-eun sosigeul barada',
+                '지갑을 잃어버리다': 'jigabeul ireobeorida',
+                '길에서 동전을 줍다': 'gireseo dongjeon-eul jupda',
+                '추석은 한국의 명절이다': 'chuseogeun hangugi myeongjeolida',
+                
+                // Tên dân tộc và vùng miền
+                '한국': 'hanguk', '한국의': 'hangugi', '한국어': 'hangugeo',
+                '서울': 'seoul', '부산': 'busan', '대구': 'daegu',
+                
+                // Các từ phổ biến khác
+                '안녕하세요': 'annyeonghaseyo', '감사합니다': 'gamsahamnida',
+                '미안합니다': 'mianhamnida', '사랑합니다': 'saranghamnida',
+                '네': 'ne', '아니요': 'aniyo', '괜찮아요': 'gwaenchanayo',
+                '실례합니다': 'sillyehamnida', '잘 지내요': 'jal jinaeyo',
+                '맛있어요': 'masisseoyo', '잘 먹겠습니다': 'jal meokgesseumnida',
+                '이름': 'ireum', '나이': 'nai', '직업': 'jigeop',
+                '학생': 'haksaeng', '선생님': 'seonsaengnim', '친구': 'chingu'
+            };
+            
+            // Kiểm tra trước nếu toàn bộ chuỗi có trong từ điển
+            if (commonWords[koreanText]) {
+                return commonWords[koreanText];
+            }
+            
+            // Tách các từ trong văn bản để phân tích riêng
+            const words = koreanText.split(/\s+/);
+            let romanization = [];
+            
+            // Thử tìm phiên âm cho mỗi từ
+            words.forEach(word => {
+                if (commonWords[word]) {
+                    romanization.push(commonWords[word]);
+                } else {
+                    romanization.push(word);
+                }
+            });
+            
+            return romanization.join(' ');
+        }
+
+        // Xử lý hiển thị và phát âm cho các ví dụ tiếng Hàn trong trang detail
+        function setupExamplePronunciation() {
+            // Chọn tất cả các ví dụ tiếng Hàn trên trang
+            const exampleItems = document.querySelectorAll('.example-item');
+            
+            exampleItems.forEach(item => {
+                // Tìm phần tiếng Hàn trong ví dụ
+                const koreanText = item.querySelector('.example-korean, .korean-text');
+                
+                // Nếu không có nút phát âm, thêm vào
+                if (koreanText && !item.querySelector('.pronunciation-button')) {
+                    const text = koreanText.textContent.trim();
+                    
+                    // Tạo nút phát âm
+                    const button = document.createElement('button');
+                    button.className = 'pronunciation-button';
+                    button.setAttribute('data-text', text);
+                    button.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    
+                    // Tìm container để thêm nút vào
+                    const container = item.querySelector('.example-content') || item;
+                    
+                    // Thêm nút vào phần tử
+                    if (container !== item) {
+                        const buttonContainer = document.createElement('div');
+                        buttonContainer.className = 'flex justify-between items-center mt-2';
+                        buttonContainer.appendChild(button);
+                        container.appendChild(buttonContainer);
+                    } else {
+                        item.appendChild(button);
+                    }
+                    
+                    // Thêm phiên âm nếu chưa có
+                    if (!item.querySelector('.example-pronunciation')) {
+                        const pronunciation = createRomanizationFromKorean(text);
+                        const pronunciationElem = document.createElement('div');
+                        pronunciationElem.className = 'example-pronunciation text-gray-500 italic text-sm';
+                        pronunciationElem.textContent = pronunciation;
+                        
+                        // Chèn sau phần tiếng Hàn
+                        if (koreanText.nextSibling) {
+                            koreanText.parentNode.insertBefore(pronunciationElem, koreanText.nextSibling);
+                        } else {
+                            koreanText.parentNode.appendChild(pronunciationElem);
+                        }
+                    }
+                }
+            });
+            
+            // Khởi tạo lại nút phát âm
+            setupPronunciationButtons();
+        }
+
+        // Cập nhật lại hàm hiển thị kết quả để xử lý lỗi khi hiển thị ví dụ
+        function handleExampleSection(data, examplesSection, examplesContent) {
+            if (!data.examples || !data.examples.length || !examplesSection || !examplesContent) return;
+            
+            try {
+                examplesContent.innerHTML = renderExamples(data.examples);
+                examplesSection.style.display = 'block';
+                
+                // Khởi tạo lại nút phát âm trong các ví dụ
+                setupExamplePronunciation();
+            } catch (error) {
+                console.error('Lỗi khi hiển thị ví dụ:', error);
+            }
+        }
+
+        // Hàm hiển thị thông báo lỗi trong DOM
+        function displayDOMError(message, elementId) {
+            console.error(`Lỗi DOM: ${message} (Element ID: ${elementId})`);
+            
+            // Tạo phần tử thông báo lỗi
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'p-4 my-4 bg-red-50 border border-red-200 rounded-md text-red-700';
+            errorDiv.innerHTML = `
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                    <strong>Lỗi hiển thị nội dung</strong>
+                </div>
+                <p>${message}</p>
+                <p class="text-xs mt-1">ElementID: ${elementId || 'Không xác định'}</p>
+                <button class="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm" onclick="location.reload()">
+                    <i class="fas fa-sync-alt mr-1"></i> Tải lại trang
+                </button>
+            `;
+            
+            // Thêm thông báo vào phần tử results nếu có
+            const resultsDiv = document.getElementById('results');
+            if (resultsDiv) {
+                resultsDiv.prepend(errorDiv);
+                resultsDiv.classList.remove('hidden');
+            } else {
+                // Nếu không tìm thấy phần tử results, thêm vào body
+                document.body.prepend(errorDiv);
+            }
+        }
+
+        // Hàm kiểm tra tồn tại của phần tử DOM
+        function validateElement(elementId, elementName) {
+            const element = document.getElementById(elementId);
+            if (!element) {
+                displayDOMError(`Không tìm thấy phần tử ${elementName || elementId} trên trang.`, elementId);
+                return null;
+            }
+            return element;
+        }
+
+        // Hàm hiển thị phần tử với kiểm tra tồn tại
+        function showElementSafely(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.style.display = 'block';
+                return true;
+            } else {
+                displayDOMError(`Không thể hiển thị phần tử ${elementId} vì không tìm thấy trên trang.`, elementId);
+                return false;
+            }
+        }
+
+        // Cải thiện hàm reset kết quả để xử lý an toàn
+        function resetResultsSafely() {
+            try {
+                // Ẩn tất cả các phần kết quả
+                document.querySelectorAll('.result-section').forEach(section => {
+                    if (section) {
+                        section.style.display = 'none';
+                    }
+                });
+                
+                // Reset nội dung các phần bằng cách sử dụng hàm kiểm tra an toàn
+                const elements = [
+                    { id: 'conversationContent', name: 'Nội dung hội thoại' },
+                    { id: 'vocabContent', name: 'Nội dung từ vựng' },
+                    { id: 'grammarContent', name: 'Nội dung ngữ pháp' },
+                    { id: 'translationContent', name: 'Nội dung dịch thuật' },
+                    { id: 'examplesContent', name: 'Nội dung ví dụ' },
+                    { id: 'cultureContent', name: 'Nội dung văn hóa' },
+                    { id: 'pronunciationContent', name: 'Nội dung phát âm' },
+                    { id: 'mnemonicsContent', name: 'Nội dung ghi nhớ' },
+                    { id: 'lessonTopic', name: 'Chủ đề bài học' }
+                ];
+                
+                elements.forEach(el => {
+                    const element = document.getElementById(el.id);
+                    if (element) {
+                        element.innerHTML = '';
+                    }
+                });
+                
+                console.log('Đã reset tất cả các phần kết quả.');
+            } catch (error) {
+                console.error('Lỗi khi reset kết quả:', error);
+            }
+        }
+
+        // Cập nhật hàm speakKorean để hỗ trợ phát âm cả tiếng Hàn và tiếng Việt
+        function speakKorean(text, callback, includeTranslation = true) {
+            if (!text) return;
+            
+            // Dừng phát âm hiện tại nếu có
+            window.speechSynthesis.cancel();
+            
+            // Lấy tốc độ phát âm từ thanh trượt
+            const speedControl = document.getElementById('pronunciation-speed');
+            const rate = speedControl ? parseFloat(speedControl.value) : 1.0;
+            
+            // Kiểm tra xem có yêu cầu phát cả bản dịch không
+            if (includeTranslation) {
+                // Tìm bản dịch tiếng Việt khi nhấn nút phát âm từ ví dụ
+                let vietnameseText = '';
+                const button = $(document.activeElement);
+                
+                if (button.hasClass('pronunciation-button')) {
+                    // Tìm phần tử cha chứa ví dụ
+                    const exampleItem = button.closest('.example-item, .pronunciation-block');
+                    if (exampleItem.length) {
+                        // Tìm phần dịch tiếng Việt
+                        const translationElement = exampleItem.find('.example-translation');
+                        if (translationElement.length) {
+                            vietnameseText = translationElement.text().trim();
+                        }
+                    }
+                }
+                
+                // Phát âm tiếng Hàn trước
+                const koreanUtterance = new SpeechSynthesisUtterance(text);
+                koreanUtterance.lang = 'ko-KR';
+                koreanUtterance.rate = rate;
+                
+                // Nếu có bản dịch tiếng Việt, phát sau khi tiếng Hàn kết thúc
+                if (vietnameseText) {
+                    koreanUtterance.onend = function() {
+                        // Tạm dừng giữa hai phần phát âm
+                        setTimeout(function() {
+                            // Phát âm tiếng Việt
+                            const vietnameseUtterance = new SpeechSynthesisUtterance(vietnameseText);
+                            vietnameseUtterance.lang = 'vi-VN';
+                            vietnameseUtterance.rate = rate * 0.9; // Giảm tốc độ một chút cho tiếng Việt
+                            
+                            // Thêm callback khi kết thúc toàn bộ quá trình phát âm
+                            if (typeof callback === 'function') {
+                                vietnameseUtterance.onend = callback;
+                            }
+                            
+                            // Phát âm tiếng Việt
+                            window.speechSynthesis.speak(vietnameseUtterance);
+                        }, 800); // Dừng 800ms giữa tiếng Hàn và tiếng Việt
+                    };
+                    
+                    // Bắt đầu phát âm tiếng Hàn
+                    window.speechSynthesis.speak(koreanUtterance);
+                } else {
+                    // Nếu không có bản dịch, chỉ phát tiếng Hàn
+                    if (typeof callback === 'function') {
+                        koreanUtterance.onend = callback;
+                    }
+                    window.speechSynthesis.speak(koreanUtterance);
+                }
+            } else {
+                // Chế độ chỉ phát tiếng Hàn (trường hợp cũ)
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                utterance.rate = rate;
+                
+                // Thêm callback khi kết thúc phát âm
+                if (typeof callback === 'function') {
+                    utterance.onend = callback;
+                }
+                
+                // Bắt đầu phát âm
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // ... existing code ...
+        // Thêm vào phần controls tốc độ phát âm
+        const speedControlHtml = `
+        <div id="global-pronunciation-settings" class="fixed bottom-4 right-4 p-2 bg-white rounded-lg shadow-lg border border-blue-300 z-50">
+            <div class="flex items-center space-x-2">
+                <label for="pronunciation-speed" class="text-sm font-medium text-gray-700">Tốc độ:</label>
+                <input type="range" id="pronunciation-speed" min="0.5" max="1.5" step="0.1" value="0.8" class="w-24">
+                <span id="speed-value" class="text-sm font-medium text-blue-600">0.8x</span>
+            </div>
+        </div>
+        `;
+
+        // Cập nhật hàm speakKorean để hỗ trợ callback khi kết thúc
+        // Hàm này đã được thay thế bởi phiên bản mới ở cuối file
+
+        // Cập nhật hàm hiển thị ví dụ phát âm
+        function displayPronunciationExamples(examples) {
+            if (!examples || !examples.length) return '';
+            
+            let html = '<div class="pronunciation-examples mt-4">';
+            html += '<h4 class="font-medium text-amber-700 mb-2"><i class="fas fa-graduation-cap mr-1"></i> Ví dụ phát âm:</h4>';
+            
+            examples.forEach(example => {
+                html += `
+                <div class="pronunciation-block">
+                    <div class="pronunciation-text">
+                        <div class="korean-text">${example.korean}</div>
+                        <div class="pronunciation-phonetics">${example.pronunciation || ''}</div>
+                        <div class="example-translation text-gray-700 mt-1">${example.vietnamese || ''}</div>
+                    </div>
+                    <button class="pronunciation-button" data-text="${example.korean.replace(/"/g, '&quot;')}">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Cập nhật hàm speakKorean để chỉ phát âm tiếng Hàn và không phát âm tiếng Việt
+        function speakKorean(text, callback) {
+            if (!text) return;
+            
+            // Dừng phát âm hiện tại nếu có
+            window.speechSynthesis.cancel();
+            
+            // Lấy tốc độ phát âm từ thanh trượt
+            const speedControl = document.getElementById('pronunciation-speed');
+            const rate = speedControl ? parseFloat(speedControl.value) : 1.0;
+            
+            // Chỉ phát âm tiếng Hàn, không phát âm tiếng Việt
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            utterance.rate = rate;
+            
+            // Thêm callback khi kết thúc phát âm
+            if (typeof callback === 'function') {
+                utterance.onend = callback;
+            }
+            
+            // Bắt đầu phát âm
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // ... existing code ...
+        // Cập nhật hàm hiển thị phát âm
+        function displayPronunciationExamples(examples) {
+            if (!examples || !Array.isArray(examples) || examples.length === 0) {
+                return '';
+            }
+            
+            let html = `
+                <div class="mt-4">
+                    <h4 class="font-medium text-amber-700 mb-2"><i class="fas fa-list-ul mr-1"></i> Ví dụ phát âm:</h4>
+                    <div class="space-y-2">
+            `;
+            
+            examples.forEach(example => {
+                const koreanText = example.korean || example.text || '';
+                const pronunciation = example.pronunciation || '';
+                const meaning = example.meaning || example.vietnamese || '';
+                
+                html += `
+                    <div class="pronunciation-example p-2 bg-white rounded-md border border-amber-100">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="korean-text font-medium text-amber-800">${koreanText}</div>
+                            <button class="pronunciation-button p-1 px-2" onclick="speakKorean('${koreanText.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-volume-up mr-1"></i> Nghe
+                            </button>
+                        </div>
+                        <div class="pronunciation-phonetics text-sm text-amber-700 italic">${pronunciation}</div>
+                        ${meaning ? `<div class="meaning text-sm text-gray-600 mt-1">${meaning}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            return html;
+        }
+
+        // Hàm để xử lý hiển thị phần pronunciation-guide
+        function handlePronunciationGuide(pronunciation) {
+            // Xử lý trường hợp danh sách các từ cách nhau bằng dấu phẩy
+            if (pronunciation.includes(',')) {
+                const words = pronunciation.split(',').map(word => word.trim()).filter(w => w);
+                let html = '<div class="space-y-2">';
+                
+                words.forEach(word => {
+                    // Tách phần tiếng Hàn và phiên âm
+                    const parts = word.split('(');
+                    if (parts.length > 1) {
+                        const korean = parts[0].trim();
+                        const phonetic = parts[1].replace(')', '').trim();
+                        
+                        html += `
+                        <div class="pronunciation-word flex items-center p-2 bg-white rounded border border-amber-100 group">
+                            <div class="flex-grow">
+                                <span class="korean-text font-medium">${korean}</span>
+                                <span class="text-amber-700 italic ml-1">(${phonetic})</span>
+                            </div>
+                            <button class="pronunciation-button small ml-2 opacity-80 group-hover:opacity-100" onclick="speakKorean('${korean.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>`;
+                    } else {
+                        html += `
+                        <div class="pronunciation-word flex items-center p-2 bg-white rounded border border-amber-100 group">
+                            <div class="flex-grow">
+                                <span class="korean-text font-medium">${word}</span>
+                            </div>
+                            <button class="pronunciation-button small ml-2 opacity-80 group-hover:opacity-100" onclick="speakKorean('${word.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>`;
+                    }
+                });
+                
+                html += '</div>';
+                return html;
+            }
+            
+            // Xử lý trường hợp mặc định
+            return `<span class="font-medium">${pronunciation}</span>`;
+        }
+
+        // Thiết lập các điều khiển phát âm
+        function setupPronunciationControls() {
+            try {
+                // Tìm tất cả các nút phát âm trên trang
+                const buttons = document.querySelectorAll('.pronunciation-button');
+                buttons.forEach(button => {
+                    // Xóa event listeners cũ
+                    const newButton = button.cloneNode(true);
+                    if (button.parentNode) {
+                        button.parentNode.replaceChild(newButton, button);
+                    }
+                    
+                    // Thêm event listener mới
+                    newButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Lấy text từ thuộc tính data-text hoặc từ phần tử gần nhất
+                        let text = this.getAttribute('data-text');
+                        if (!text) {
+                            const container = this.closest('.pronunciation-word, .example-item, .pronunciation-example');
+                            if (container) {
+                                const koreanText = container.querySelector('.korean-text, .example-korean, .korean-word-text');
+                                if (koreanText) {
+                                    text = koreanText.textContent;
+                                }
+                            }
+                        }
+                        
+                        if (text) {
+                            speakKorean(text);
+                        }
+                    });
+                });
+                
+                // Phát âm bài hoàn chỉnh khi nhấn vào nút lớn
+                const fullPronunciationButton = document.querySelector('.pronunciation-button.large');
+                if (fullPronunciationButton) {
+                    fullPronunciationButton.addEventListener('click', function() {
+                        const text = this.getAttribute('data-text');
+                        if (text) {
+                            speakKorean(text);
+                        } else {
+                            const guide = document.querySelector('.pronunciation-guide');
+                            if (guide) {
+                                const koreanText = guide.querySelector('.font-medium, .korean-original');
+                                if (koreanText) {
+                                    speakKorean(koreanText.textContent);
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Xử lý hiển thị phần pronunciation guide
+                document.querySelectorAll('.pronunciation-guide').forEach(guide => {
+                    const content = guide.textContent.trim();
+                    if (content.split(',').length > 1) {
+                        guide.innerHTML = handlePronunciationGuide(content);
+                    }
+                });
+                
+                // Cập nhật giá trị hiển thị tốc độ phát âm
+                const speedControl = document.getElementById('pronunciation-speed');
+                const speedValue = document.getElementById('speed-value');
+                
+                if (speedControl && speedValue) {
+                    speedControl.addEventListener('input', function() {
+                        speedValue.textContent = `${speedControl.value}x`;
+                    });
+                }
+                
+                // Xử lý hiển thị/ẩn bảng cài đặt
+                const settingsToggle = document.querySelector('.pronunciation-settings');
+                if (settingsToggle) {
+                    settingsToggle.addEventListener('click', function() {
+                        togglePronunciationSettings();
+                    });
+                }
+            } catch (e) {
+                console.error('Lỗi khi thiết lập điều khiển phát âm:', e);
+            }
+        }
+
+        // Cập nhật hàm thêm nút phát âm cho ví dụ hiển thị trong trang
+        function setupPronunciationButtons() {
+            try {
+                // Thiết lập các nút phát âm
+                document.querySelectorAll('.pronunciation-button').forEach(button => {
+                    if (!button.hasAttribute('data-initialized')) {
+                        button.setAttribute('data-initialized', 'true');
+                        
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            
+                            // Tìm text để phát âm
+                            let textToSpeak = button.getAttribute('data-text');
+                            
+                            if (!textToSpeak) {
+                                // Tìm trong các phần tử lân cận
+                                const container = button.closest('.example-item, .pronunciation-block, .pronunciation-word, .korean-phonetic-word, .pronunciation-example');
+                                if (container) {
+                                    const textElement = container.querySelector('.example-korean, .korean-text, .korean-word-text');
+                                    if (textElement) {
+                                        textToSpeak = textElement.textContent;
+                                    }
+                                }
+                            }
+                            
+                            if (textToSpeak) {
+                                speakKorean(textToSpeak);
+                                
+                                // Hiệu ứng khi đang phát âm
+                                button.classList.add('playing');
+                                setTimeout(() => {
+                                    button.classList.remove('playing');
+                                }, 1500);
+                            }
+                        });
+                    }
+                });
+                
+                console.log(`Đã thiết lập các nút phát âm trên trang.`);
+            } catch (error) {
+                console.error('Lỗi khi thiết lập nút phát âm:', error);
+            }
+        }
+
+        // Đảm bảo chạy lại hàm thiết lập sau khi hiển thị kết quả
+        document.addEventListener('DOMContentLoaded', function() {
+            setupPronunciationControls();
+            
+            // Thiết lập sự kiện cho các phần tử được thêm vào DOM sau này
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length) {
+                        setupPronunciationButtons();
+                    }
+                });
+            });
+            
+            // Theo dõi thay đổi trong container kết quả
+            const resultsContainer = document.getElementById('results');
+            if (resultsContainer) {
+                observer.observe(resultsContainer, { childList: true, subtree: true });
+            }
+            
+            console.log(`Đã khởi tạo theo dõi thay đổi DOM cho container kết quả.`);
+            
+            // Thiết lập ban đầu cho các nút phát âm
+            setupPronunciationButtons();
+        });
+
+        // Thiết lập nút phát âm cho các ví dụ
+        function setupExamplePronunciation() {
+            try {
+                document.querySelectorAll('.example-item .pronunciation-button').forEach(button => {
+                    if (!button.hasAttribute('data-initialized')) {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            
+                            // Thiết lập giao diện khi phát âm
+                            document.querySelectorAll('.example-item .pronunciation-button').forEach(btn => {
+                                btn.classList.remove('playing');
+                            });
+                            document.querySelectorAll('.example-korean').forEach(text => {
+                                text.classList.remove('playing-text');
+                            });
+                            
+                            // Highlight ví dụ đang phát âm
+                            const exampleItem = this.closest('.example-item');
+                            const koreanText = exampleItem.querySelector('.example-korean');
+                            
+                            if (koreanText) {
+                                koreanText.classList.add('playing-text');
+                            }
+                            this.classList.add('playing');
+                            
+                            // Lấy nội dung tiếng Hàn để phát âm
+                            const textToSpeak = this.dataset.text || koreanText.textContent;
+                            
+                            // Phát âm với callback khi kết thúc
+                            if (textToSpeak) {
+                                speakKorean(textToSpeak, () => {
+                                    // Xóa trạng thái highlight khi kết thúc
+                                    this.classList.remove('playing');
+                                    if (koreanText) {
+                                        koreanText.classList.remove('playing-text');
+                                    }
+                                }, true);
+                            }
+                        });
+                        
+                        // Đánh dấu đã khởi tạo
+                        button.setAttribute('data-initialized', 'true');
+                    }
+                });
+                
+                console.log('Đã khởi tạo các nút phát âm cho ví dụ.');
+            } catch (error) {
+                console.error('Lỗi khi thiết lập nút phát âm cho ví dụ:', error);
+            }
+        }
+
+        // Cải thiện hàm reset kết quả để xử lý an toàn và khôi phục cấu trúc DOM nếu cần
+        function resetResultsSafely() {
+            try {
+                // Kiểm tra và tạo lại các section nếu chúng không tồn tại
+                const resultsDiv = document.getElementById('results');
+                if (!resultsDiv) {
+                    console.error('Không tìm thấy phần tử results');
+                    return;
+                }
+                
+                // Danh sách các section cần kiểm tra
+                const sections = [
+                    { id: 'conversation-section', title: 'Hội thoại', icon: 'comments', contentId: 'conversationContent' },
+                    { id: 'vocab-section', title: 'Từ vựng', icon: 'book', contentId: 'vocabContent' },
+                    { id: 'grammar-section', title: 'Ngữ pháp', icon: 'feather-alt', contentId: 'grammarContent' },
+                    { id: 'translation-section', title: 'Dịch thuật', icon: 'language', contentId: 'translationContent' },
+                    { id: 'examples-section', title: 'Ví dụ', icon: 'lightbulb', contentId: 'examplesContent' },
+                    { id: 'culture-section', title: 'Văn hóa', icon: 'landmark', contentId: 'cultureContent' },
+                    { id: 'pronunciation-section', title: 'Phát âm', icon: 'volume-up', contentId: 'pronunciationContent' },
+                    { id: 'lesson-section', title: 'Bài học ngữ pháp', icon: 'chalkboard-teacher', contentId: 'lessonTopic' },
+                    { id: 'mnemonics-section', title: 'Phương pháp ghi nhớ', icon: 'brain', contentId: 'mnemonicsContent' }
+                ];
+                
+                // Kiểm tra và khôi phục các section
+                sections.forEach(section => {
+                    let sectionElement = document.getElementById(section.id);
+                    
+                    // Nếu section không tồn tại, tạo mới
+                    if (!sectionElement) {
+                        console.log(`Tạo lại section ${section.id}`);
+                        sectionElement = document.createElement('div');
+                        sectionElement.id = section.id;
+                        sectionElement.className = 'result-section';
+                        sectionElement.style.display = 'none';
+                        
+                        // Tạo tiêu đề
+                        const titleElement = document.createElement('h3');
+                        titleElement.innerHTML = `<i class="fas fa-${section.icon} text-blue-600"></i> ${section.title}`;
+                        sectionElement.appendChild(titleElement);
+                        
+                        // Tạo div nội dung
+                        const contentDiv = document.createElement('div');
+                        contentDiv.id = section.contentId;
+                        sectionElement.appendChild(contentDiv);
+                        
+                        // Xử lý đặc biệt cho lesson-section
+                        if (section.id === 'lesson-section') {
+                            createLessonSectionContent(sectionElement);
+                        }
+                        
+                        // Thêm vào results
+                        resultsDiv.appendChild(sectionElement);
+                    } else {
+                        // Nếu section tồn tại, ẩn đi
+                        sectionElement.style.display = 'none';
+                        
+                        // Kiểm tra content div
+                        const contentDiv = document.getElementById(section.contentId);
+                        if (!contentDiv) {
+                            console.log(`Tạo lại div nội dung ${section.contentId}`);
+                            const newContentDiv = document.createElement('div');
+                            newContentDiv.id = section.contentId;
+                            sectionElement.appendChild(newContentDiv);
+                        } else {
+                            // Xóa nội dung cũ
+                            contentDiv.innerHTML = '';
+                        }
+                    }
+                });
+                
+                // Kiểm tra và khôi phục các phần tử con của lesson-section
+                const lessonSection = document.getElementById('lesson-section');
+                if (lessonSection) {
+                    const lessonTopicElement = document.getElementById('lessonTopic');
+                    if (!lessonTopicElement) {
+                        createLessonSectionContent(lessonSection);
+                    }
+                }
+                
+                console.log('Đã reset và khôi phục cấu trúc DOM cho tất cả các phần kết quả.');
+            } catch (error) {
+                console.error('Lỗi khi reset kết quả:', error);
+            }
+        }
+        
+        // Hàm tạo nội dung cho lesson-section
+        function createLessonSectionContent(lessonSection) {
+            // Xóa nội dung cũ
+            lessonSection.innerHTML = '';
+            
+            // Tạo tiêu đề
+            const titleElement = document.createElement('h3');
+            titleElement.innerHTML = '<i class="fas fa-chalkboard-teacher text-blue-600"></i> Bài học ngữ pháp';
+            lessonSection.appendChild(titleElement);
+            
+            // Tạo heading cho chủ đề
+            const topicHeading = document.createElement('h4');
+            topicHeading.id = 'lessonTopic';
+            topicHeading.className = 'font-semibold text-lg mb-2 text-blue-800';
+            lessonSection.appendChild(topicHeading);
+            
+            // Tạo các phần nội dung của bài học
+            const lessonParts = [
+                { id: 'lesson-definition', title: 'Định nghĩa', icon: 'info-circle', contentClass: 'definition-content' },
+                { id: 'lesson-usage', title: 'Cách dùng', icon: 'cog', contentClass: 'usage-content' },
+                { id: 'lesson-comparison', title: 'So sánh', icon: 'balance-scale', contentClass: 'comparison-content' },
+                { id: 'lesson-common_mistakes', title: 'Lỗi thường gặp', icon: 'exclamation-triangle', contentClass: 'common-mistakes-content' },
+                { id: 'lesson-examples', title: 'Ví dụ', icon: 'list-ul', contentClass: 'examples-content' },
+                { id: 'lesson-exercise', title: 'Bài tập', icon: 'pencil-alt', contentClass: 'exercise-content' }
+            ];
+            
+            lessonParts.forEach(part => {
+                const partContainer = document.createElement('div');
+                partContainer.id = part.id;
+                partContainer.className = 'mb-4';
+                
+                const partHeading = document.createElement('h5');
+                partHeading.className = 'font-medium text-blue-700 mb-2';
+                partHeading.innerHTML = `<i class="fas fa-${part.icon} mr-1"></i> ${part.title}:`;
+                partContainer.appendChild(partHeading);
+                
+                const partContent = document.createElement('div');
+                partContent.className = `${part.contentClass} pl-4 border-l-2 border-blue-200`;
+                partContainer.appendChild(partContent);
+                
+                lessonSection.appendChild(partContainer);
+            });
+        }
+    </script>
+</body>
+</html>
