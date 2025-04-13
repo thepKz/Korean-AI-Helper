@@ -28,7 +28,7 @@
 
 1. **Clone repository**
    ```bash
-   git clone https://github.com/yourusername/hanquocsarang.git
+   git clone https://github.com/thepKz/hanquocsarang.git
    cd hanquocsarang
    ```
 
@@ -52,7 +52,6 @@
    - Tạo file `.env` trong thư mục gốc và thêm các thông tin sau:
      ```
      XAI_API_KEY=your_api_key_here
-     SECRET_KEY=your_secret_key_here
      ```
 
 5. **Chạy ứng dụng**
@@ -268,9 +267,9 @@ Phân phối theo giấy phép MIT. Xem `LICENSE` để biết thêm thông tin.
 
 ## 📞 Liên hệ
 
-Email: your.email@example.com
+Email: minthepz@gmail.com 
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by [Minthep]
 "# Korean-AI-Helper" 
